@@ -187,6 +187,7 @@
     <link rel="stylesheet" href="https://js.arcgis.com/4.5/esri/css/main.css">
     <script src="https://js.arcgis.com/4.5/"></script>
     <script>
+    var dataBank = {};
     require([
         // ArcGIS JS
         "esri/Color",
@@ -399,17 +400,44 @@
         });
         view.on("click", function(evt) {
 
+            dataBank.buildings = dataBank.buildings||{}
             view.hitTest(evt.screenPoint).then(function(response) {
                 if (response.results[0].graphic) {
                     console.log("Top graphic found! Here it is: ", response.results[0].graphic);
-                    openDrawer('selecteddata')
+                    // open the drawer
+                    openDrawer('selecteddata');
+                    // check if data aready retrieved
+                    if(!dataBank.buildings.hasOwnProperty(response.results[0].graphic.uid)){
+                      var inspectionURL = 'https://api_to_get.data?buildingID='+response.results[0].graphic.uid;
+                      xhr(inspectionsUrl, {
+                          handleAs: "json"
+                      })
+                      .then(
+                        // success
+                        function(data){
+                          // store data in an object so we can access it
+                          dataBank.buildings[response.results[0].graphic.uid]=data;
+                        displayBuildingData(response.results[0].graphic.uid)
+                        },
+                        //error
+                        function(){
+
+                        }
+                      )
+                    }
+                    // display data from the building in the drawer
+                    displayBuildingData(response.results[0].graphic.uid)
                 }
 
                 var graphic = response.results[0].graphic;
             });
         });
 
-
+        function displayBuildingData(uid){
+          if(!dataBank.buildings.hasOwnProperty(uid)){
+            return false;
+          }
+        }
 
 
 
