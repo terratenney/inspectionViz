@@ -106,7 +106,10 @@
 
   .drawer-no-overflow {
     overflow: hidden; }
-
+.innertab{padding:10px;font-size:1.2rem; background-color:#f8f8f8}
+  .innertab--settings{}
+  .innertab--selecteddata{}
+  .innertab--cart{}
     </style>
 </head>
 
@@ -124,15 +127,17 @@
   <!-- Tab panes -->
   <div class="tab-content">
     <div role="tabpanel" class="tab-pane" id="settings">
-      <div class="contentSettings">
+      <div class="innertab innertab--settings">
 
       </div>
     </div>
     <div role="tabpanel" class="tab-pane" id="selecteddata">
-      <div class="contentData"></div>
+      <div class="innertab innertab--selecteddata">There is no data selected. Click on a building to retrive information.</div>
     </div>
     <div role="tabpanel" class="tab-pane" id="cart">
-      <div class="contentCartt"></div>
+      <div class="innertab innertab--cart">
+        Your cart is empty, you don't have anything to download.
+      </div>
     </div>
   </div>
     </div>
