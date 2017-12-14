@@ -408,7 +408,7 @@
                     openDrawer('selecteddata');
                     // check if data aready retrieved
                     if(!dataBank.buildings.hasOwnProperty(response.results[0].graphic.uid)){
-                      var inspectionURL = 'https://api_to_get.data?buildingID='+response.results[0].graphic.uid;
+                      var inspectionsUrl = 'https://api_to_get.data?buildingID='+response.results[0].graphic.uid;
                       xhr(inspectionsUrl, {
                           handleAs: "json"
                       })
@@ -478,7 +478,18 @@
       document.getElementsByClassName('js-drawer-toggle')[0].addEventListener('click', toggleDrawer);
       // close the drawer if click on brand
       document.getElementById('calciteToggleNavbar').addEventListener('click', closeDrawer);
-
+      document.onkeydown = function(evt) {
+          evt = evt || window.event;
+          var isEscape = false;
+          if ("key" in evt) {
+              isEscape = (evt.key == "Escape" || evt.key == "Esc");
+          } else {
+              isEscape = (evt.keyCode == 27);
+          }
+          if (isEscape) {
+             closeDrawer();
+          }
+      };
 
 
 
