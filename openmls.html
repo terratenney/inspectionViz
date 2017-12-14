@@ -114,7 +114,7 @@
 </head>
 
 <body class="calcite-maps calcite-nav-top">
-  <div class="drawer drawer-right js-drawer" data-drawer="top-nav" tabindex="0">
+  <div class="drawer drawer-right js-drawer" data-drawer="top-nav" tabName="0">
     <div class="drawer-nav">
 
   <!-- Nav tabs -->
@@ -155,7 +155,7 @@
         <div class="calcite-title calcite-overflow-hidden">
             <span class="calcite-title-main">Geocollective</span>
             <span class="calcite-title-divider hidden-xs"></span>
-            <span class="calcite-title-sub hidden-xs">Toronto Inscpection</span>
+            <span class="calcite-title-sub hidden-xs">Toronto Inspection</span>
         </div>
         <!-- Nav
 		I would try to cram as much functionality into this drop down menu, perhaps making is as a collapseable sidebar is ideal.
@@ -402,6 +402,7 @@
             view.hitTest(evt.screenPoint).then(function(response) {
                 if (response.results[0].graphic) {
                     console.log("Top graphic found! Here it is: ", response.results[0].graphic);
+                    openDrawer('selecteddata')
                 }
 
                 var graphic = response.results[0].graphic;
@@ -430,10 +431,10 @@
     /**
      * functions related to drawer
      */
-      function openDrawer(tabindex){
-        tabindex = tabindex||'settings';
+      function openDrawer(tabName){
+        tabName = tabName||'settings';
          document.getElementsByClassName('js-drawer')[0].classList.add('is-active');
-         query('a[href="#'+tabindex+'"]').tab('show')
+         query('a[href="#'+tabName+'"]').tab('show')
       }
       function closeDrawer(){
          document.getElementsByClassName('js-drawer')[0].classList.remove('is-active');
