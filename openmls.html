@@ -33,12 +33,90 @@
         height: 841px !important;
     }
 
-
     */
+
+    /* stealing drawer CSS from calcite web */
+    /* I WILL ORGANIZE CSS and JS a bit better in a close future */
+.drawer {
+  position: fixed;
+  top: 0;
+  right: 0;
+  bottom: 0;
+  left: 0;
+  visibility: hidden;
+  overflow: hidden;
+  opacity: 0;
+  background: rgba(0, 0, 0, 0.75);
+  -webkit-transition: visibility 0ms linear 200ms, opacity 200ms linear;
+  transition: visibility 0ms linear 200ms, opacity 200ms linear;
+  z-index: 1001; }
+  .drawer.is-active {
+    visibility: visible;
+    opacity: 1;
+    background-color: rgba(0, 0, 0, 0.75);
+    -webkit-transition-delay: 0ms;
+    transition-delay: 0ms; }
+    .drawer.is-active.drawer-right .drawer-nav {
+      -webkit-transform: translate3d(-280px, 0, 0);
+      -moz-transform: translate3d(-280px, 0, 0);
+      -ms-transform: translate3d(-280px, 0, 0);
+      -o-transform: translate3d(-280px, 0, 0);
+      transform: translate3d(-280px, 0, 0); }
+
+.drawer-nav {
+  position: absolute;
+  top: 0;
+  height: 100%;
+  width: 280px;
+  margin: 0;
+  padding: 60px 10px 10px 10px;
+  background: #ffffff;
+  overflow-x: hidden;
+  overflow-y: auto;
+  -webkit-overflow-scrolling: touch;
+  -webkit-transform: translate3d(0, 0, 0);
+  -moz-transform: translate3d(0, 0, 0);
+  -ms-transform: translate3d(0, 0, 0);
+  -o-transform: translate3d(0, 0, 0);
+  transform: translate3d(0, 0, 0);
+  -webkit-transition: -webkit- transform 200ms cubic-bezier(0.215, 0.44, 0.42, 0.88);
+  -moz-transition: -moz- transform 200ms cubic-bezier(0.215, 0.44, 0.42, 0.88);
+  -o-transition: -o- transform 200ms cubic-bezier(0.215, 0.44, 0.42, 0.88);
+  transition: transform 200ms cubic-bezier(0.215, 0.44, 0.42, 0.88); }
+
+.drawer-right .drawer-nav {
+  left: 100%; }
+
+.wrapper {
+  -webkit-transition: -webkit- transform 200ms cubic-bezier(0.215, 0.44, 0.42, 0.88);
+  -moz-transition: -moz- transform 200ms cubic-bezier(0.215, 0.44, 0.42, 0.88);
+  -o-transition: -o- transform 200ms cubic-bezier(0.215, 0.44, 0.42, 0.88);
+  transition: transform 200ms cubic-bezier(0.215, 0.44, 0.42, 0.88); }
+
+.drawer-right-is-active {
+  -webkit-transition: -webkit- transform 200ms cubic-bezier(0.215, 0.44, 0.42, 0.88);
+  -moz-transition: -moz- transform 200ms cubic-bezier(0.215, 0.44, 0.42, 0.88);
+  -o-transition: -o- transform 200ms cubic-bezier(0.215, 0.44, 0.42, 0.88);
+  transition: transform 200ms cubic-bezier(0.215, 0.44, 0.42, 0.88);
+  -webkit-transform: translate3d(-280px, 0, 0);
+  -moz-transform: translate3d(-280px, 0, 0);
+  -ms-transform: translate3d(-280px, 0, 0);
+  -o-transform: translate3d(-280px, 0, 0);
+  transform: translate3d(-280px, 0, 0); }
+
+.drawer-no-overflow {
+  overflow: hidden; }
+
     </style>
 </head>
 
 <body class="calcite-maps calcite-nav-top">
+  <div class="drawer drawer-right js-drawer" data-drawer="top-nav" tabindex="0">
+    <div class="drawer-nav">
+      TACATACATAC
+    </div>
+  </div>
+  <div class="wrapper">
     <!-- Navbar  Here is where you can likely add in a lot of the functionality we talked about, drop downs, radio buttions, shopping cart, table view etc. -->
     <nav class="navbar calcite-navbar navbar-fixed-top calcite-text-light calcite-bg-dark calcite-bgcolor-dark-blue">
         <!-- Header -->
@@ -53,12 +131,12 @@
             <span class="calcite-title-divider hidden-xs"></span>
             <span class="calcite-title-sub hidden-xs">Toronto Inscpection</span>
         </div>
-        <!-- Nav 
-		I would try to cram as much functionality into this drop down menu, perhaps making is as a collapseable sidebar is ideal. 
-		
+        <!-- Nav
+		I would try to cram as much functionality into this drop down menu, perhaps making is as a collapseable sidebar is ideal.
+
 		-->
         <ul class="calcite-nav nav navbar-nav">
-            <li><a role="button" data-target=".esri-legend" data-toggle="collapse" aria-expanded="true"><span class="glyphicon glyphicon-list"></span></a></li>
+            <li><a href="#" class="js-drawer-toggle" data-drawer="right"><span class="glyphicon glyphicon-list"></span></a></li>
         </ul>
     </nav>
     <!--/.navbar -->
@@ -127,7 +205,6 @@
         "esri/symbols/LabelSymbol3D",
         // Bootstrap
         "bootstrap/Collapse",
-
         // Calcite-maps
         "calcite-maps/calcitemaps-v0.2",
         "dojo/domReady!"
@@ -136,9 +213,9 @@
         SimpleMarkerSymbol, SimpleLineSymbol, SimpleFillSymbol,
         Search, SearchVM, BasemapToggle, BasemapToggleVM, xhr, lang, domStyle, query, Symbol3D,
         PointSymbol3D, ObjectSymbol3DLayer, PolygonSymbol3D, ExtrudeSymbol3DLayer, TextSymbol3DLayer, SceneLayer, PopupTemplate, all, on, query, IdentifyParameters, LabelSymbol3D, SimpleRenderer, FeatureLayer) {
-        
-		
-		
+
+
+
 		var sceneLayer = new SceneLayer({
 		//it be nice to hook the tables for addresses with related geoid's for the 3d building layer we have on a feature server here.... alas, not until we work out the address issue
             url: "http://tiles.arcgis.com/tiles/z2tnIkrLQ2BRzr6P/arcgis/rest/services/Toronto_LoD3_3D_Buildings/SceneServer/layers/0"
@@ -150,29 +227,29 @@
 
 		//This is the coloring function we talked about. Right now it is hardcoded and needs to be dynamic, using natural breaks classification and select colors/opactity based on user input
 		// Colors can be hex values, although [r,g,b,opacity] arrays will probably be most usful.
-		// Here is some code to copy from (might be better options out there), for the natural breaks jenks classification https://gist.github.com/tmcw/4969184 is essentially determines with class/color and height to assign 
+		// Here is some code to copy from (might be better options out there), for the natural breaks jenks classification https://gist.github.com/tmcw/4969184 is essentially determines with class/color and height to assign
 		//based on "attributes" in the data. I.e., inspection/violation counts for MLS and FIRE.
 		//picking gradients for colors and logical steps in heights (in meters again) will be iterative processes.
-        function colorclass(value) {
-            var color;
-            if (value < 100) {
+      function colorclass(value) {
+          var color;
+          if (value < 100) {
 
-                color = "#8dd3c7";
-            } else if (value < 150 && value > 100) {
+              color = "#8dd3c7";
+          } else if (value < 150 && value > 100) {
 
-                color = "#80b1d3";
-            } else if (value > 150 && value < 175) {
+              color = "#80b1d3";
+          } else if (value > 150 && value < 175) {
 
-                color = "#ffffb3";
-            } else if (value > 175) {
-                color = "#bebada";
+              color = "#ffffb3";
+          } else if (value > 175) {
+              color = "#bebada";
 
-            } else {
-                color = "#decbe4"
-            }
-            return color
-        }
-		
+          } else {
+              color = "#decbe4"
+          }
+          return color
+      }
+
 		//here I am reading in the building geometry and attributes, where the buildingID will be. GeoJson structure is [{geometery:{x,y,z},{properties:{'buildingID':X}}},{....}]
         var boundary = "neighbor_hood_polys.geojson";
         var buildings = "buildings2.geojson";
@@ -218,9 +295,9 @@
                 this.graphics.push(polygonGraphic);
             }
         }));
-		
+
        /*
-		//this is a built in tool, called renderers that would do the coloring/height adjustments for us by attributes, 
+		//this is a built in tool, called renderers that would do the coloring/height adjustments for us by attributes,
 		but they don't work on the graphicsLayer object class and our data wont fit the "featureclass" data structure..this was my attempt to make it so
 	   var renderer = {
             type: "simple", // autocasts as new SimpleRenderer()
@@ -249,7 +326,7 @@
             renderer: renderer // UniqueValueRenderer based on `type` attribute
         });
         map.add(lyr);
-		
+
 		*/
 
 
@@ -278,9 +355,9 @@
                 tilt: 82.95536300536367
             })
         });
-		
-		// below are the start of a hittest/ray casting function to identify selected buildings by mouse clicks. Being able to select multiple, add to shopping cart, etc. download data etc 
-		//could be done on creating a selected array, storing bluiding ids from this.buildingsLayer. Also filtering, highlighting, etc. buildings by selection/hit test might be useful. 
+
+		// below are the start of a hittest/ray casting function to identify selected buildings by mouse clicks. Being able to select multiple, add to shopping cart, etc. download data etc
+		//could be done on creating a selected array, storing bluiding ids from this.buildingsLayer. Also filtering, highlighting, etc. buildings by selection/hit test might be useful.
         view.on("click", function(event) {
             var graphic = new Graphic({
                 geometry: event.mapPoint,
@@ -305,8 +382,53 @@
                 var graphic = response.results[0].graphic;
             });
         });
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+    /**
+     * functions related to drawer
+     */
+      function openDrawer(){
+         document.getElementsByClassName('js-drawer')[0].classList.add('is-active');
+      }
+      function closeDrawer(){
+         document.getElementsByClassName('js-drawer')[0].classList.remove('is-active');
+      }
+      function toggleDrawer(){
+        if (document.getElementsByClassName('js-drawer')[0].classList.contains('is-active')) {
+          closeDrawer()
+        } else {
+          openDrawer()
+        }
+      }
+      // on button click -> toggle the drawer
+      document.getElementsByClassName('js-drawer-toggle')[0].addEventListener('click', toggleDrawer);
+
+
+
+
+
+
     });
     </script>
+  </div><!-- /.wrapper -->
 </body>
 
 </html>
