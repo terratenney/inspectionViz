@@ -258,7 +258,7 @@
             </div>
           </div>
         <!-- / accordion  -->
-
+      <div>Download
       </div>
     </div>
     <div role="tabpanel" class="tab-pane" id="selecteddata">
@@ -318,6 +318,7 @@
     <script src="https://js.arcgis.com/4.5/"></script>
     <script>
     var dataBank = {};
+    var API_URL = 'https://was-inter-sit.toronto.ca/c3api_data/v2/DataAccess.svc/dataproject';
     require([
         // ArcGIS JS
         "esri/Color",
@@ -530,25 +531,29 @@
             });
         });
         view.on("click", function(evt) {
-
-            dataBank.buildings = dataBank.buildings||{}
+            dataBank.parcels = dataBank.parcels||{}
             view.hitTest(evt.screenPoint).then(function(response) {
                 if (response.results[0].graphic) {
                     console.log("Top graphic found! Here it is: ", response.results[0].graphic);
                     // open the drawer
                     openDrawer('selecteddata');
                     // check if data aready retrieved
-                    if(!dataBank.buildings.hasOwnProperty(response.results[0].graphic.uid)){
-                      var inspectionsUrl = 'https://api_to_get.data?buildingID='+response.results[0].graphic.uid;
+                    if(!dataBank.parcels.hasOwnProperty(response.results[0].graphic.uid)){
+                      var inspectionsUrl =`${API_URL}/fire?$filter=RID eq '211500'`; // ${response.results[0].graphic.uid}'`;
                       xhr(inspectionsUrl, {
                           handleAs: "json"
                       })
                       .then(
                         // success
                         function(data){
+                          if (data.value.length=="0"){
+                            query('#selecteddata .innertab').attr("innerHTML", "No data were found in the fire database for that building");
+                          }
+                          else {
+                            dataBank.parcels[response.results[0].graphic.uid]=data.value[0];
+                          }
                           // store data in an object so we can access it
-                          dataBank.buildings[response.results[0].graphic.uid]=data;
-                        displayBuildingData(response.results[0].graphic.uid)
+                          displayBuildingData(response.results[0].graphic.uid)
                         },
                         //error
                         function(){
@@ -565,14 +570,10 @@
         });
 
         function displayBuildingData(uid){
-          if(!dataBank.buildings.hasOwnProperty(uid)){
+          if(!dataBank.parcels.hasOwnProperty(uid)){
             return false;
           }
         }
-
-
-
-
 
 
 
