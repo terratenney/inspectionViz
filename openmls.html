@@ -583,14 +583,14 @@
                                     },
                                     //error
                                     function(){
-                                      displayError('Error retrieving deficiencies data from the server. Please try again later.')
+                                      displayDataTab('Error retrieving deficiencies data from the server. Please try again later.')
                                     }
                                   )
                                 }
                               },
                               //error
                               function(){
-                                displayError('Error retrieving MLS data from the server. Please try again later.')
+                                displayDataTab('Error retrieving MLS data from the server. Please try again later.')
                               }
                             )
                           }
@@ -613,6 +613,57 @@
           if(!dataBank.parcels.hasOwnProperty(uid)){
             return false;
           }
+          var isFire = dataBank.parcels[uid].hasOwnProperty('fireInspections'),
+              isMls =  dataBank.parcels[uid].hasOwnProperty('mlsInspections'),
+              isDef =  dataBank.parcels[uid].hasOwnProperty('deficiencies'),
+              fireInspections = isFire?dataBank.parcels[uid].fireInspections:null,
+              mlsInspections = isMls?dataBank.parcels[uid].mlsInspections:null,
+              deficiencies = isDef?dataBank.parcels[uid].deficiencies:[],
+          if (!isFire){
+            // we don't have fire Inspections data, so no building info !
+            return false;
+          }
+          // display Building
+          var html = `<div class="row">
+            <div class="col-xs-12"><h3>Building Report</h3></div>
+            <div class="col-xs-3">Address</div>
+            <div class="col-xs-9">${fireInspections.PROPERTYAD}</div>
+            <div class="col-xs-3">Owner</div>
+            <div class="col-xs-9">${fireInspections.PROPERTY_O}</div>
+            <div class="col-xs-3">Nb of Inspections</div>
+            <div class="col-xs-9">${fireInspections.INSPECTION}</div>
+            <div class="col-xs-3">Nb of Violations</div>
+            <div class="col-xs-9">${fireInspections.VIOLATIONS}</div>
+          </div>`;
+          if (isDef){
+            html+=`<div class="row">
+              <div class="col-xs-12"><h4>Deficiencies</h4></div>
+              <div class="col-xs-12"><table class="table table-stripped table-condensed">
+                <thead>
+                  <tr>
+                    <th>Location</th>
+                    <th>Sublocation</th>
+                    <th>status</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  ${deficiencies.map(function(obj){
+                    return `<tr>
+                      <td>${obj.LOCATION}</td>
+                      <td>${obj.SUBLOCATION}</td>
+                      <td>${obj.STATUS}</td>
+                    </tr>
+                    <tr>
+                      <td colspan="3">${obj.TEXT}</td>
+                    </tr>`
+                  }).join()}
+                </tbody>
+              </table></div>
+            </div>`;
+          }
+
+          // display HTML in tab
+          displayDataTab(html);
         }
 
 
@@ -646,9 +697,9 @@
           openDrawer()
         }
       }
-      function displayError(message){
-        message = message || "Error!";
-        query('#selecteddata .innertab').attr("innerHTML", message);
+      function displayDataTab(html){
+        html = html || "Error!";
+        query('#selecteddata .innertab').attr("innerHTML", html);
       }
       // on button click -> toggle the drawer
       document.getElementsByClassName('js-drawer-toggle')[0].addEventListener('click', toggleDrawer);
