@@ -533,39 +533,79 @@
         view.on("click", function(evt) {
             dataBank.parcels = dataBank.parcels||{}
             view.hitTest(evt.screenPoint).then(function(response) {
-                if (response.results[0].graphic) {
-                    console.log("Top graphic found! Here it is: ", response.results[0].graphic);
+                var graphic = response.results[0].graphic;
+                if (graphic) {
+                    console.log("Top graphic found! Here it is: ", graphic);
                     // open the drawer
                     openDrawer('selecteddata');
+                    var UID = graphic.uid;
                     // check if data aready retrieved
-                    if(!dataBank.parcels.hasOwnProperty(response.results[0].graphic.uid)){
-                      var inspectionsUrl =`${API_URL}/fire?$filter=RID eq '211500'`; // ${response.results[0].graphic.uid}'`;
-                      xhr(inspectionsUrl, {
+                    if(dataBank.parcels.hasOwnProperty(UID)){
+                      displayBuildingData(UID);
+                    }
+                    else {
+                      dataBank.parcels[UID]={};
+                      var fireInspectionsURL =`${API_URL}/fire?$filter=RID eq '211500'`;
+                      // var fireInspectionsURL = `${API_URL}/fire?$filter=RID eq '${UID}'`;
+                      xhr(fireInspectionsURL, {
                           handleAs: "json"
                       })
                       .then(
                         // success
                         function(data){
-                          if (data.value.length=="0"){
-                            query('#selecteddata .innertab').attr("innerHTML", "No data were found in the fire database for that building");
-                          }
-                          else {
-                            dataBank.parcels[response.results[0].graphic.uid]=data.value[0];
+                          if (data.value.length==1){
+                            dataBank.parcels[UID].fireInspections=data.value[0];
+                            var mlsInspectionsURL =`${API_URL}/mls?$filter=RID eq '522685'`;
+                            // var mlsInspectionsURL = `${API_URL}/mls?$filter=RID eq '${UID}'`;
+                            xhr(mlsInspectionsURL, {
+                                handleAs: "json"
+                            })
+                            .then(
+                              // success
+                              function(mlsData){
+                                if(mlsData.value.length==1){
+                                  // store mls data and get investigation id
+                                  dataBank.parcels[UID].mlsInspections = mlsData.value[0];
+                                  var investigationID = mlsData.value[0].INVESTIGAT;
+                                  // last API call to get deficiencies table data
+                                  var deficienciesURL =`${API_URL}/def?$filter=INVESTIGATION_ID eq '4064115'`;
+                                  // var deficienciesURL = `${API_URL}/def?$filter=INVESTIGATION_ID eq '${investigationID}'`;
+                                  xhr(deficienciesURL, {
+                                      handleAs: "json"
+                                  })
+                                  .then(
+                                    // success
+                                    function(defData){
+                                      if (defData.value.length!=0){
+                                        dataBank.parcels[UID].deficiencies = defData.value;
+                                      }
+                                      displayBuildingData(UID);
+                                    },
+                                    //error
+                                    function(){
+                                      displayError('Error retrieving deficiencies data from the server. Please try again later.')
+                                    }
+                                  )
+                                }
+                              },
+                              //error
+                              function(){
+                                displayError('Error retrieving MLS data from the server. Please try again later.')
+                              }
+                            )
                           }
                           // store data in an object so we can access it
-                          displayBuildingData(response.results[0].graphic.uid)
+                          displayBuildingData(UID)
                         },
                         //error
                         function(){
-
+                          alert('Error retrieving Fire Inspections data from the server. Please try again later.')
                         }
                       )
                     }
-                    // display data from the building in the drawer
-                    displayBuildingData(response.results[0].graphic.uid)
+
                 }
 
-                var graphic = response.results[0].graphic;
             });
         });
 
@@ -605,6 +645,10 @@
         } else {
           openDrawer()
         }
+      }
+      function displayError(message){
+        message = message || "Error!";
+        query('#selecteddata .innertab').attr("innerHTML", message);
       }
       // on button click -> toggle the drawer
       document.getElementsByClassName('js-drawer-toggle')[0].addEventListener('click', toggleDrawer);
