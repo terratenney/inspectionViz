@@ -618,7 +618,7 @@
               isDef =  dataBank.parcels[uid].hasOwnProperty('deficiencies'),
               fireInspections = isFire?dataBank.parcels[uid].fireInspections:null,
               mlsInspections = isMls?dataBank.parcels[uid].mlsInspections:null,
-              deficiencies = isDef?dataBank.parcels[uid].deficiencies:[],
+              deficiencies = isDef?dataBank.parcels[uid].deficiencies:[];
           if (!isFire){
             // we don't have fire Inspections data, so no building info !
             return false;
