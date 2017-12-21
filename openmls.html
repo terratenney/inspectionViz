@@ -258,7 +258,7 @@
             </div>
           </div>
         <!-- / accordion  -->
-      <div>Download
+
       </div>
     </div>
     <div role="tabpanel" class="tab-pane" id="selecteddata">
@@ -302,6 +302,8 @@
     </div>
     <!-- /.container -->
     <script type="text/javascript">
+    var dataBank = {};
+    var API_URL = 'https://was-inter-sit.toronto.ca/c3api_data/v2/DataAccess.svc/dataproject';
     var dojoConfig = {
         packages: [{
                 name: "bootstrap",
@@ -318,7 +320,6 @@
     <script src="https://js.arcgis.com/4.5/"></script>
     <script>
     var dataBank = {};
-    var API_URL = 'https://was-inter-sit.toronto.ca/c3api_data/v2/DataAccess.svc/dataproject';
     require([
         // ArcGIS JS
         "esri/Color",
@@ -531,28 +532,34 @@
             });
         });
         view.on("click", function(evt) {
+
             dataBank.parcels = dataBank.parcels||{}
             view.hitTest(evt.screenPoint).then(function(response) {
                 var graphic = response.results[0].graphic;
                 if (graphic) {
                     console.log("Top graphic found! Here it is: ", graphic);
                     // open the drawer
-                    openDrawer('selecteddata');
                     var UID = graphic.uid;
                     // check if data aready retrieved
-                    if(dataBank.parcels.hasOwnProperty(UID)){
+                    console.log(dataBank)
+                    if(dataBank.parcels.hasOwnProperty(UID) && dataBank.parcels[UID].hasOwnProperty('fireInspections')){
+                    console.log('display building info')
                       displayBuildingData(UID);
                     }
                     else {
+
+                      console.log('building no info')
                       dataBank.parcels[UID]={};
                       var fireInspectionsURL =`${API_URL}/fire?$filter=RID eq '211500'`;
                       // var fireInspectionsURL = `${API_URL}/fire?$filter=RID eq '${UID}'`;
+                      console.log('ready?')
                       xhr(fireInspectionsURL, {
                           handleAs: "json"
                       })
                       .then(
                         // success
                         function(data){
+                          console.log('API found');
                           if (data.value.length==1){
                             dataBank.parcels[UID].fireInspections=data.value[0];
                             var mlsInspectionsURL =`${API_URL}/mls?$filter=RID eq '522685'`;
@@ -599,6 +606,7 @@
                         },
                         //error
                         function(){
+                          console.log('API not found');
                           alert('Error retrieving Fire Inspections data from the server. Please try again later.')
                         }
                       )
@@ -613,12 +621,13 @@
           if(!dataBank.parcels.hasOwnProperty(uid)){
             return false;
           }
+          openDrawer('selecteddata');
           var isFire = dataBank.parcels[uid].hasOwnProperty('fireInspections'),
               isMls =  dataBank.parcels[uid].hasOwnProperty('mlsInspections'),
               isDef =  dataBank.parcels[uid].hasOwnProperty('deficiencies'),
               fireInspections = isFire?dataBank.parcels[uid].fireInspections:null,
               mlsInspections = isMls?dataBank.parcels[uid].mlsInspections:null,
-              deficiencies = isDef?dataBank.parcels[uid].deficiencies:[];
+              deficiencies = isDef?dataBank.parcels[uid].deficiencies:[]
           if (!isFire){
             // we don't have fire Inspections data, so no building info !
             return false;
@@ -679,44 +688,46 @@
 
 
 
-    /**
-     * functions related to drawer
-     */
-      function openDrawer(tabName){
-        tabName = tabName||'settings';
-         document.getElementsByClassName('js-drawer')[0].classList.add('is-active');
-         query('a[href="#'+tabName+'"]').tab('show')
-      }
-      function closeDrawer(){
-         document.getElementsByClassName('js-drawer')[0].classList.remove('is-active');
-      }
-      function toggleDrawer(){
-        if (document.getElementsByClassName('js-drawer')[0].classList.contains('is-active')) {
-          closeDrawer()
-        } else {
-          openDrawer()
-        }
-      }
-      function displayDataTab(html){
-        html = html || "Error!";
-        query('#selecteddata .innertab').attr("innerHTML", html);
-      }
-      // on button click -> toggle the drawer
-      document.getElementsByClassName('js-drawer-toggle')[0].addEventListener('click', toggleDrawer);
-      // close the drawer if click on brand
-      document.getElementById('calciteToggleNavbar').addEventListener('click', closeDrawer);
-      document.onkeydown = function(evt) {
-          evt = evt || window.event;
-          var isEscape = false;
-          if ("key" in evt) {
-              isEscape = (evt.key == "Escape" || evt.key == "Esc");
-          } else {
-              isEscape = (evt.keyCode == 27);
-          }
-          if (isEscape) {
-             closeDrawer();
-          }
-      };
+
+
+
+
+
+         function openDrawer(tabName){
+           tabName = tabName||'settings';
+            document.getElementsByClassName('js-drawer')[0].classList.add('is-active');
+            query('a[href="#'+tabName+'"]').tab('show')
+         }
+         function closeDrawer(){
+            document.getElementsByClassName('js-drawer')[0].classList.remove('is-active');
+         }
+         function toggleDrawer(){
+           if (document.getElementsByClassName('js-drawer')[0].classList.contains('is-active')) {
+             closeDrawer()
+           } else {
+             openDrawer()
+           }
+         }
+         function displayDataTab(html){
+           html = html || "Error!";
+           query('#selecteddata .innertab').attr("innerHTML", html);
+         }
+         // on button click -> toggle the drawer
+         document.getElementsByClassName('js-drawer-toggle')[0].addEventListener('click', toggleDrawer);
+         // close the drawer if click on brand
+         document.getElementById('calciteToggleNavbar').addEventListener('click', closeDrawer);
+         document.onkeydown = function(evt) {
+             evt = evt || window.event;
+             var isEscape = false;
+             if ("key" in evt) {
+                 isEscape = (evt.key == "Escape" || evt.key == "Esc");
+             } else {
+                 isEscape = (evt.keyCode == 27);
+             }
+             if (isEscape) {
+                closeDrawer();
+             }
+         };
 
 
 
