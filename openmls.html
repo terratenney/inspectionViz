@@ -327,10 +327,13 @@
       "esri/widgets/Legend",
       "esri/symbols/PointSymbol3D",
       "esri/symbols/ObjectSymbol3DLayer",
-      "dojo/domReady!"
+	  "dojo/request/xhr",
+	  "dojo/query",
+	  "bootstrap/Tab",
+	  "dojo/domReady!"
     ], function(
-      Map, SceneView, FeatureLayer, Legend,      PointSymbol3D,
-      ObjectSymbol3DLayer
+      Map, SceneView, FeatureLayer, Legend,PointSymbol3D,
+      ObjectSymbol3DLayer,xhr,query,tab
     ) {
 
   var map = new Map({
