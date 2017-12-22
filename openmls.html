@@ -329,7 +329,7 @@ require([
 ], function(Map, SceneView, FeatureLayer) {
 
   var map = new Map({
-    basemap: "gray"
+    basemap: "dark-gray-vector"
   });
       var renderer = {
         type: "simple", // autocasts as new SimpleRenderer()
@@ -344,13 +344,28 @@ require([
           field: "MLSVIO",
           stops: [
           {
-            value: 3,
+            value: 2,
             size: 20,
             label: "1,000"
           },
-          {
-            value: 10,
+		  {
+            value: 3,
+            size: 30,
+            label: "1,000"
+          },
+		  {
+            value: 5,
+            size: 50,
+            label: "1,000"
+          },
+		  {
+            value: 15,
             size: 100,
+            label: "1,000"
+          },
+          {
+            value: 20,
+            size: 200,
             label: ">150,000"
           }]
         }, {
@@ -361,13 +376,28 @@ require([
           },
           stops: [
           {
+            value: 2,
+            color: [255,255,204,.7],
+            label: "<15%"
+          },
+		  {
+            value: 3,
+            color: [255,237,160,.7],
+            label: "<15%"
+          },
+		  {
             value: 5,
-            color: "#FFFCD4",
+            color: [254,178,76,.7],
+            label: "<15%"
+          },
+		  {
+            value: 10,
+            color: [252,78,42,.7],
             label: "<15%"
           },
           {
             value: 20,
-            color: [153, 83, 41],
+            color: [128,0,38,.7],
             label: ">35%"
           }]
         }]
