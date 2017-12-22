@@ -320,95 +320,105 @@
     <script src="https://js.arcgis.com/4.5/"></script>
     <script>
     var dataBank = {};
-require([
-  "esri/Map",
-  "esri/views/SceneView",
-  //*** ADD ***//
-  "esri/layers/FeatureLayer",
-  "dojo/domReady!"
-], function(Map, SceneView, FeatureLayer) {
+ require([
+      "esri/Map",
+      "esri/views/SceneView",
+      "esri/layers/FeatureLayer",
+      "esri/widgets/Legend",
+      "esri/symbols/PointSymbol3D",
+      "esri/symbols/ObjectSymbol3DLayer",
+      "dojo/domReady!"
+    ], function(
+      Map, SceneView, FeatureLayer, Legend,      PointSymbol3D,
+      ObjectSymbol3DLayer
+    ) {
 
   var map = new Map({
     basemap: "dark-gray-vector"
   });
-      var renderer = {
+
+var	 symbol =   new PointSymbol3D({
+          symbolLayers: [new ObjectSymbol3DLayer({
+            resource: {
+              primitive: "cone"
+            },
+            width: 50 // width of the symol in meters
+          })]
+        })
+ var renderer = {
         type: "simple", // autocasts as new SimpleRenderer()
-        symbol: {
-          type: "polygon-3d", // autocasts as new PolygonSymbol3D()
-          symbolLayers: [{
-            type: "extrude" // autocasts as new ExtrudeSymbol3DLayer()
-          }]
-        },
+              symbol: symbol,
         visualVariables: [{
           type: "size",
           field: "MLSVIO",
+		  legendOptions: {
+            title: "Number of MLS Violations per Parcel (EXTRUDED HEIGHT)"
+          },
           stops: [
           {
-            value: 2,
-            size: 20,
-            label: "1,000"
-          },
-		  {
-            value: 3,
-            size: 30,
-            label: "1,000"
-          },
-		  {
-            value: 5,
-            size: 50,
-            label: "1,000"
-          },
-		  {
-            value: 15,
-            size: 100,
-            label: "1,000"
+            value: 0,
+            size: 25,
+            label: "0"
           },
           {
-            value: 20,
-            size: 200,
-            label: ">20"
-          }]
+            value: 160,
+            size: 1000,
+            label: "160"
+          }],
+          axis: "height"
+        },{
+          type: "size",
+          axis: "width-and-depth",
+          useSymbolValue: true // uses the width value defined in the symbol layer (50,000)
         }, {
           type: "color",
           field: "FIREVIOL",
+
           legendOptions: {
-            title: "% population with income below poverty level"
+            title: "Number of Fire Violations per Parcel"
           },
           stops: [
           {
             value: 2,
             color: [255,255,204,.7],
-            label: "<15%"
+            label: "<2"
           },
 		  {
             value: 3,
             color: [255,237,160,.7],
-            label: "<15%"
+            label: "<3"
           },
 		  {
             value: 5,
             color: [254,178,76,.7],
-            label: "<15%"
+            label: "<5"
           },
 		  {
             value: 10,
             color: [252,78,42,.7],
-            label: "<15%"
+            label: "<10"
           },
           {
             value: 20,
             color: [128,0,38,.7],
-            label: ">35%"
+            label: ">20"
           }]
         }]
       };
-  //*** ADD ***//
-  
-
   var featureLayer = new FeatureLayer({
     url:  "https://services5.arcgis.com/5R55vsKfq7f14num/arcgis/rest/services/finalfinal/FeatureServer/0",
+	title: "Property Inspection Violations",
 	renderer: renderer,
-	outFields: ["*"]
+	outFields: ["*"],
+	popupTemplate: { // autocasts as new PopupTemplate()
+  title: "ParcelID: {RID}",
+  content: "<p>The property located at, <b>{Match_addr}</b> owened by " +
+						" <b>{PROPERTY_O}</b> had the following MLS and FIRE inspection/violation information:</p>" +
+						"<ul><b>{MLSINSP}</b> MLS inspections with</li>" +
+						"<li><b>{MLSVIO}</b> MLS violations</li></ul>" +
+						"<ul><li><b>{FIREINSP}</b> FIRE inspections with</li>" +
+						"<li><b>{FIREVIOL}</b> FIRE violations</li></ul>"
+}
   });
 
   map.add(featureLayer);
@@ -426,6 +436,11 @@ view.then(function(){
     tilt: 70,
     zoom: 9})
 });
+      var legend = new Legend({
+        view: view
+      });
+
+      view.ui.add(legend, "bottom-right");
 
 		
 		view.on("click", function(evt) {
