@@ -320,218 +320,82 @@
     <script src="https://js.arcgis.com/4.5/"></script>
     <script>
     var dataBank = {};
-    require([
-        // ArcGIS JS
-        "esri/Color",
-        "esri/Map",
-        "esri/views/SceneView",
-        "esri/Camera",
-        "esri/layers/GraphicsLayer",
+require([
+  "esri/Map",
+  "esri/views/SceneView",
+  //*** ADD ***//
+  "esri/layers/FeatureLayer",
+  "dojo/domReady!"
+], function(Map, SceneView, FeatureLayer) {
 
-        "esri/Graphic",
-        "esri/geometry/Point",
-        "esri/geometry/Polyline",
-        "esri/geometry/Polygon",
+  var map = new Map({
+    basemap: "gray"
+  });
+      var renderer = {
+        type: "simple", // autocasts as new SimpleRenderer()
+        symbol: {
+          type: "polygon-3d", // autocasts as new PolygonSymbol3D()
+          symbolLayers: [{
+            type: "extrude" // autocasts as new ExtrudeSymbol3DLayer()
+          }]
+        },
+        visualVariables: [{
+          type: "size",
+          field: "MLSVIO",
+          stops: [
+          {
+            value: 3,
+            size: 20,
+            label: "1,000"
+          },
+          {
+            value: 10,
+            size: 100,
+            label: ">150,000"
+          }]
+        }, {
+          type: "color",
+          field: "FIREVIOL",
+          legendOptions: {
+            title: "% population with income below poverty level"
+          },
+          stops: [
+          {
+            value: 5,
+            color: "#FFFCD4",
+            label: "<15%"
+          },
+          {
+            value: 20,
+            color: [153, 83, 41],
+            label: ">35%"
+          }]
+        }]
+      };
+  //*** ADD ***//
+  var featureLayer = new FeatureLayer({
+    url:  "https://services5.arcgis.com/5R55vsKfq7f14num/arcgis/rest/services/finalfinal/FeatureServer/0",
+	renderer: renderer
+  });
 
-        "esri/symbols/SimpleMarkerSymbol",
-        "esri/symbols/SimpleLineSymbol",
-        "esri/symbols/SimpleFillSymbol",
-
-        "esri/widgets/Search",
-        "esri/widgets/Search/SearchViewModel",
-        "esri/widgets/BasemapToggle",
-        "esri/widgets/BasemapToggle/BasemapToggleViewModel",
-        "dojo/request/xhr",
-        "dojo/_base/lang",
-        "dojo/dom-style",
-        "dojo/query",
-
-        "esri/symbols/Symbol3D",
-        "esri/symbols/PointSymbol3D",
-        "esri/symbols/ObjectSymbol3DLayer",
-        "esri/symbols/PolygonSymbol3D",
-        "esri/symbols/ExtrudeSymbol3DLayer",
-        "esri/symbols/TextSymbol3DLayer",
-        "esri/layers/SceneLayer",
-        "esri/layers/FeatureLayer",
-
-        "esri/PopupTemplate",
-        "esri/renderers/SimpleRenderer",
-        "dojo/promise/all",
-        "dojo/on",
-        "esri/tasks/support/IdentifyParameters",
-        "esri/symbols/LabelSymbol3D",
-        // Bootstrap
-        "bootstrap/Tab",
-        "bootstrap/Collapse",
-        // Calcite-maps
-        "calcite-maps/calcitemaps-v0.2",
-        "dojo/domReady!"
-    ], function(Color, Map, SceneView, Camera, GraphicsLayer,
-        Graphic, Point, Polyline, Polygon,
-        SimpleMarkerSymbol, SimpleLineSymbol, SimpleFillSymbol,
-        Search, SearchVM, BasemapToggle, BasemapToggleVM, xhr, lang, domStyle, query, Symbol3D,
-        PointSymbol3D, ObjectSymbol3DLayer, PolygonSymbol3D, ExtrudeSymbol3DLayer, TextSymbol3DLayer, SceneLayer, PopupTemplate, all, on, IdentifyParameters, LabelSymbol3D, tab,SimpleRenderer, FeatureLayer) {
-
-
-
-		var sceneLayer = new SceneLayer({
-		//it be nice to hook the tables for addresses with related geoid's for the 3d building layer we have on a feature server here.... alas, not until we work out the address issue
-            url: "http://tiles.arcgis.com/tiles/z2tnIkrLQ2BRzr6P/arcgis/rest/services/Toronto_LoD3_3D_Buildings/SceneServer/layers/0"
-        });
-        var map = new Map({
-            basemap: "dark-gray",
-            //layers: [sceneLayer]
-        });
-
-		//This is the coloring function we talked about. Right now it is hardcoded and needs to be dynamic, using natural breaks classification and select colors/opactity based on user input
-		// Colors can be hex values, although [r,g,b,opacity] arrays will probably be most usful.
-		// Here is some code to copy from (might be better options out there), for the natural breaks jenks classification https://gist.github.com/tmcw/4969184 is essentially determines with class/color and height to assign
-		//based on "attributes" in the data. I.e., inspection/violation counts for MLS and FIRE.
-		//picking gradients for colors and logical steps in heights (in meters again) will be iterative processes.
-      function colorclass(value) {
-          var color;
-          if (value < 100) {
-
-              color = "#8dd3c7";
-          } else if (value < 150 && value > 100) {
-
-              color = "#80b1d3";
-          } else if (value > 150 && value < 175) {
-
-              color = "#ffffb3";
-          } else if (value > 175) {
-              color = "#bebada";
-
-          } else {
-              color = "#decbe4"
-          }
-          return color
-      }
-
-		//here I am reading in the building geometry and attributes, where the buildingID will be. GeoJson structure is [{geometery:{x,y,z},{properties:{'buildingID':X}}},{....}]
-        var boundary = "neighbor_hood_polys.geojson";
-        var buildings = "buildings2.geojson";
-        this.graphics = [];
-		//this is the actual array of graphic/geometry objects we see on the map. So you would loop over/filter on this.buildingsLayer
-        this.buildingsLayer = new GraphicsLayer();
-        map.add(this.buildingsLayer);
-        xhr(buildings, {
-            handleAs: "json"
-        }).then(lang.hitch(this, function(data) {
-        //reading buildings json, adding it to buildingsLayer with color,height (those functions you're going to create)
-            for (var ctr in data.features) {
-                var boundaryPoly = data.features[ctr].geometry.coordinates[0];
-
-                var polygon = new Polygon([boundaryPoly]);
-                var elevation = data.features[ctr].properties.HEIGHT_MSL;
-                var color = colorclass(elevation);
-				//this is the way we will style the buildings. Essentially this when a user changes a field to symbolize by, or, visualize by , we loop over the this.buildingsLayer and change their height/color fill usinge below
-                var fill2Symbol = new PolygonSymbol3D({
-                    symbolLayers: [new ExtrudeSymbol3DLayer({
-                        size: elevation, // in meteres meters in height
-                        material: { color: color }
-                    })]
-                });
-				//this is a simple fill example, not being used. But when we dont have a value etc - we can set this to be greyed out etc. We can also set on to be a "highlight" fill when users select a building(s)
-                var fillSymbol = new SimpleFillSymbol({
-                    color: [139, 139, 139, 0.1],
-
-                    outline: new SimpleLineSymbol({
-                        color: [255, 255, 255],
-                        width: 1
-                    })
-                });
-				//creating a  polygon graphic, used by the esri webscene to be the building we see on the map. Notice I am assigning an attributes values, which is just a json/dictionary object {'key':"value"}.
-				//this is used by the built in funtion to create a popup when the building is clicked. But because we have multiple tables to work with - it might be adventagous to create our own popup table with tables and filtering
-				//ability which can be triggered with the raycasting test at the bottom of the script
-                var polygonGraphic = new Graphic({
-                    geometry: polygon,
-                    symbol: fill2Symbol,
-                    attributes: { 'ObjectID': ctr, "HEIGHT_MSL": data.features[ctr].properties.HEIGHT_MSL }
-                });
-                this.buildingsLayer.add(polygonGraphic);
-                this.graphics.push(polygonGraphic);
-            }
-        }));
-
-       /*
-		//this is a built in tool, called renderers that would do the coloring/height adjustments for us by attributes,
-		but they don't work on the graphicsLayer object class and our data wont fit the "featureclass" data structure..this was my attempt to make it so
-	   var renderer = {
-            type: "simple", // autocasts as new SimpleRenderer()
-            symbol: {
-                type: "simple-fill", // autocasts as new SimpleFillSymbol()
-                color: [255, 128, 0, 0.5],
-            }
-        };
-
-
-        var lyr = new FeatureLayer({
-            // create an instance of esri/layers/support/Field for each field object
-            fields: [{
-                name: "ObjectID",
-                alias: "ObjectID",
-                type: "oid"
-            }, {
-                name: "HEIGHT_MSL",
-                alias: "HEIGHT_MSL",
-                type: "double"
-            }],
-            objectIdField: "ObjectID",
-            geometryType: "polygon",
-            spatialReference: { wkid: 4326 },
-            source: this.buildingsLayer,
-            renderer: renderer // UniqueValueRenderer based on `type` attribute
-        });
-        map.add(lyr);
-
-		*/
-
+  map.add(featureLayer);
 
         var view = new SceneView({
             container: "mapViewDiv",
             padding: {
                 top: 50
             },
-            map: map,
-            popup: {
-
-                dockOptions: {
-                    // Disables the dock button from the popup
-                    buttonEnabled: false,
-                    // Ignore the default sizes that trigger responsive docking
-                    breakpoint: false,
-                }
-            },
-            camera: new Camera({
-                position: new Point({
-                    x: -79.261723,
-                    y: 43.582808,
-                    z: 12660.7049653716385
-                }),
-                heading: 0.34445102566290225,
-                tilt: 82.95536300536367
-            })
+            map: map
         });
+view.then(function(){
+  view.goTo({
+    center: [-79.261723, 43.572808],
+    tilt: 70,
+    zoom: 9})
+});
 
-		// below are the start of a hittest/ray casting function to identify selected buildings by mouse clicks. Being able to select multiple, add to shopping cart, etc. download data etc
-		//could be done on creating a selected array, storing bluiding ids from this.buildingsLayer. Also filtering, highlighting, etc. buildings by selection/hit test might be useful.
-        view.on("click", function(event) {
-            var graphic = new Graphic({
-                geometry: event.mapPoint,
-                symbol: {
-                    type: "simple-marker", // autocasts as new SimpleMarkerSymbol()
-                    color: "blue",
-                    size: 8,
-                    outline: { // autocasts as new SimpleLineSymbol()
-                        width: 0.5,
-                        color: "darkblue"
-                    }
-                }
-            });
-        });
-        view.on("click", function(evt) {
+		
+		view.on("click", function(evt) {
 
             dataBank.parcels = dataBank.parcels||{}
             view.hitTest(evt.screenPoint).then(function(response) {
@@ -675,24 +539,6 @@
           displayDataTab(html);
         }
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
          function openDrawer(tabName){
            tabName = tabName||'settings';
             document.getElementsByClassName('js-drawer')[0].classList.add('is-active');
@@ -728,11 +574,11 @@
                 closeDrawer();
              }
          };
-
-
-
-
+        
     });
+	
+	
+	
     </script>
   </div><!-- /.wrapper -->
 </body>
