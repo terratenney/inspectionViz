@@ -330,6 +330,7 @@
 	  "dojo/request/xhr",
 	  "dojo/query",
 	  "bootstrap/Tab",
+	  "bootstrap/Collapse",
 	  "dojo/domReady!"
     ], function(
       Map, SceneView, FeatureLayer, Legend,PointSymbol3D,
@@ -445,7 +446,7 @@ view.then(function(){
 
       view.ui.add(legend, "bottom-right");
 
-		
+
 		view.on("click", function(evt) {
 
             dataBank.parcels = dataBank.parcels||{}
@@ -625,11 +626,11 @@ view.then(function(){
                 closeDrawer();
              }
          };
-        
+
     });
-	
-	
-	
+
+
+
     </script>
   </div><!-- /.wrapper -->
 </body>
