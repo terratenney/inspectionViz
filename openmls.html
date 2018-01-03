@@ -455,20 +455,16 @@ view.then(function(){
                 if (graphic) {
                     console.log("Top graphic found! Here it is: ", graphic);
                     // open the drawer
-                    var UID = graphic.uid;
+                    var UID = graphic.attributes.OBJECTID;
                     // check if data aready retrieved
-                    console.log(dataBank)
                     if(dataBank.parcels.hasOwnProperty(UID) && dataBank.parcels[UID].hasOwnProperty('fireInspections')){
-                    console.log('display building info')
                       displayBuildingData(UID);
                     }
                     else {
-
-                      console.log('building no info')
                       dataBank.parcels[UID]={};
-                      var fireInspectionsURL =`${API_URL}/fire?$filter=RID eq '211500'`;
-                      // var fireInspectionsURL = `${API_URL}/fire?$filter=RID eq '${UID}'`;
-                      console.log('ready?')
+                      //var fireInspectionsURL =`${API_URL}/fire?$filter=RID eq '211500'`;
+                       var fireInspectionsURL = `${API_URL}/fire?$filter=RID eq '${UID}'`;
+
                       xhr(fireInspectionsURL, {
                           handleAs: "json"
                       })
@@ -476,40 +472,40 @@ view.then(function(){
                         // success
                         function(data){
                           console.log('API found');
-                          if (data.value.length==1){
+                          if (data.value.length>0){
                             dataBank.parcels[UID].fireInspections=data.value[0];
-                            var mlsInspectionsURL =`${API_URL}/mls?$filter=RID eq '522685'`;
-                            // var mlsInspectionsURL = `${API_URL}/mls?$filter=RID eq '${UID}'`;
+                            //var mlsInspectionsURL =`${API_URL}/mls?$filter=RID eq '522685'`;
+                             var mlsInspectionsURL = `${API_URL}/mls?$filter=RID eq '${UID}'`;
                             xhr(mlsInspectionsURL, {
                                 handleAs: "json"
                             })
                             .then(
                               // success
                               function(mlsData){
-                                if(mlsData.value.length==1){
+                                if(mlsData.value.length>0){
                                   // store mls data and get investigation id
                                   dataBank.parcels[UID].mlsInspections = mlsData.value[0];
-                                  var investigationID = mlsData.value[0].INVESTIGAT;
-                                  // last API call to get deficiencies table data
-                                  var deficienciesURL =`${API_URL}/def?$filter=INVESTIGATION_ID eq '4064115'`;
-                                  // var deficienciesURL = `${API_URL}/def?$filter=INVESTIGATION_ID eq '${investigationID}'`;
-                                  xhr(deficienciesURL, {
-                                      handleAs: "json"
-                                  })
-                                  .then(
-                                    // success
-                                    function(defData){
-                                      if (defData.value.length!=0){
-                                        dataBank.parcels[UID].deficiencies = defData.value;
-                                      }
-                                      displayBuildingData(UID);
-                                    },
-                                    //error
-                                    function(){
-                                      displayDataTab('Error retrieving deficiencies data from the server. Please try again later.')
-                                    }
-                                  )
                                 }
+                                var investigationID = mlsData.value[0].INVESTIGATIONID;
+                                // last API call to get deficiencies table data
+                                var deficienciesURL =`${API_URL}/def?$filter=INVESTIGATIONID eq '4064115'`;
+                                 //var deficienciesURL = `${API_URL}/def?$filter=INVESTIGATIONID eq '${investigationID}'`;
+                                xhr(deficienciesURL, {
+                                    handleAs: "json"
+                                })
+                                .then(
+                                  // success
+                                  function(defData){
+                                    if (defData.value.length!=0){
+                                      dataBank.parcels[UID].deficiencies = defData.value;
+                                    }
+                                    displayBuildingData(UID);
+                                  },
+                                  //error
+                                  function(){
+                                    displayDataTab('Error retrieving deficiencies data from the server. Please try again later.')
+                                  }
+                                )
                               },
                               //error
                               function(){
@@ -517,8 +513,6 @@ view.then(function(){
                               }
                             )
                           }
-                          // store data in an object so we can access it
-                          displayBuildingData(UID)
                         },
                         //error
                         function(){
@@ -538,6 +532,7 @@ view.then(function(){
             return false;
           }
           openDrawer('selecteddata');
+          console.log(dataBank.parcels[uid])
           var isFire = dataBank.parcels[uid].hasOwnProperty('fireInspections'),
               isMls =  dataBank.parcels[uid].hasOwnProperty('mlsInspections'),
               isDef =  dataBank.parcels[uid].hasOwnProperty('deficiencies'),
@@ -551,14 +546,14 @@ view.then(function(){
           // display Building
           var html = `<div class="row">
             <div class="col-xs-12"><h3>Building Report</h3></div>
-            <div class="col-xs-3">Address</div>
-            <div class="col-xs-9">${fireInspections.PROPERTYAD}</div>
-            <div class="col-xs-3">Owner</div>
-            <div class="col-xs-9">${fireInspections.PROPERTY_O}</div>
-            <div class="col-xs-3">Nb of Inspections</div>
-            <div class="col-xs-9">${fireInspections.INSPECTION}</div>
-            <div class="col-xs-3">Nb of Violations</div>
-            <div class="col-xs-9">${fireInspections.VIOLATIONS}</div>
+            <div class="col-xs-4">Address</div>
+            <div class="col-xs-8">${fireInspections.PROPERTYAD}</div>
+            <div class="col-xs-4">Owner</div>
+            <div class="col-xs-8">${fireInspections.PROPERTY_O||'n/a'}</div>
+            <div class="col-xs-4">Nb of Inspections</div>
+            <div class="col-xs-8">${fireInspections.INSPECTION}</div>
+            <div class="col-xs-4">Nb of Violations</div>
+            <div class="col-xs-8">${fireInspections.VIOLATIONS}</div>
           </div>`;
           if (isDef){
             html+=`<div class="row">
@@ -579,9 +574,9 @@ view.then(function(){
                       <td>${obj.STATUS}</td>
                     </tr>
                     <tr>
-                      <td colspan="3">${obj.TEXT}</td>
+                      <td colspan="3">${obj.DETAILS}</td>
                     </tr>`
-                  }).join()}
+                  }).join('')}
                 </tbody>
               </table></div>
             </div>`;
