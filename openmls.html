@@ -135,7 +135,7 @@
               <div class="panel-heading">
                 <h4 class="panel-title"><a data-toggle="collapse" data-parent="#accordionSettings" href="#collapseOne">Legend</a></h4></div>
               <div id="collapseOne" class="panel-collapse collapse">
-                <div class="panel-body">Legend goes here.</div>
+                <div class="panel-body esri-legend">Legend goes here.</div>
               </div>
             </div>
             <div class="panel panel-default">
@@ -414,15 +414,15 @@ var	 symbol =   new PointSymbol3D({
 	title: "Property Inspection Violations",
 	renderer: renderer,
 	outFields: ["*"],
-	popupTemplate: { // autocasts as new PopupTemplate()
-  title: "ParcelID: {RID}",
-  content: "<p>The property located at, <b>{Match_addr}</b> owened by " +
-						" <b>{PROPERTY_O}</b> had the following MLS and FIRE inspection/violation information:</p>" +
-						"<ul><b>{MLSINSP}</b> MLS inspections with</li>" +
-						"<li><b>{MLSVIO}</b> MLS violations</li></ul>" +
-						"<ul><li><b>{FIREINSP}</b> FIRE inspections with</li>" +
-						"<li><b>{FIREVIOL}</b> FIRE violations</li></ul>"
-}
+// 	popupTemplate: { // autocasts as new PopupTemplate()
+//   title: "ParcelID: {RID}",
+//   content: "<p>The property located at, <b>{Match_addr}</b> owened by " +
+// 						" <b>{PROPERTY_O}</b> had the following MLS and FIRE inspection/violation information:</p>" +
+// 						"<ul><b>{MLSINSP}</b> MLS inspections with</li>" +
+// 						"<li><b>{MLSVIO}</b> MLS violations</li></ul>" +
+// 						"<ul><li><b>{FIREINSP}</b> FIRE inspections with</li>" +
+// 						"<li><b>{FIREVIOL}</b> FIRE violations</li></ul>"
+// }
   });
 
   map.add(featureLayer);
