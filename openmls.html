@@ -104,10 +104,53 @@
 
   .drawer-no-overflow {
     overflow: hidden; }
+
+    .spinner {
+      margin: 100px auto 0;
+      width: 70px;
+      text-align: center;
+    }
+
+    .spinner > div {
+      width: 18px;
+      height: 18px;
+      background-color: #196fa6;
+      border-radius: 100%;
+      display: inline-block;
+      -webkit-animation: sk-bouncedelay 1.4s infinite ease-in-out both;
+      animation: sk-bouncedelay 1.4s infinite ease-in-out both;
+    }
+
+    .spinner .bounce1 {
+      -webkit-animation-delay: -0.32s;
+      animation-delay: -0.32s;
+    }
+
+    .spinner .bounce2 {
+      -webkit-animation-delay: -0.16s;
+      animation-delay: -0.16s;
+    }
+
+    @-webkit-keyframes sk-bouncedelay {
+      0%, 80%, 100% { -webkit-transform: scale(0) }
+      40% { -webkit-transform: scale(1.0) }
+    }
+
+    @keyframes sk-bouncedelay {
+      0%, 80%, 100% {
+        -webkit-transform: scale(0);
+        transform: scale(0);
+      } 40% {
+        -webkit-transform: scale(1.0);
+        transform: scale(1.0);
+      }
+    }
+
 .innertab{padding:10px;font-size:1.2rem; min-height:400px;border-left:1px solid #a9a9a9;background-color:#f8f8f8}
   .innertab--settings{}
   .innertab--selecteddata{}
   .innertab--cart{}
+
     </style>
 </head>
 
@@ -452,13 +495,14 @@ view.then(function(){
                 var graphic = response.results[0].graphic;
                 if (graphic) {
                     console.log("Top graphic found! Here it is: ", graphic);
-                    // open the drawer
+
                     var UID = graphic.attributes.OBJECTID;
                     // check if data aready retrieved
                     if(dataBank.parcels.hasOwnProperty(UID) && dataBank.parcels[UID].hasOwnProperty('fireInspections')){
                       displayBuildingData(UID);
                     }
                     else {
+                      loaderStart();
                       dataBank.parcels[UID]={};
                       //var fireInspectionsURL =`${API_URL}/fire?$filter=RID eq '211500'`;
                        var fireInspectionsURL = `${API_URL}/fire?$filter=RID eq '${UID}'`;
@@ -498,6 +542,7 @@ view.then(function(){
                                       dataBank.parcels[UID].deficiencies = defData.value;
                                     }
                                     displayBuildingData(UID);
+                                     loaderStop();
                                   },
                                   //error
                                   function(){
@@ -598,6 +643,19 @@ view.then(function(){
            } else {
              openDrawer()
            }
+         }
+         function loaderStart(){
+          displayDataTab(`<div class="spinner">
+            <div class="bounce1"></div>
+            <div class="bounce2"></div>
+            <div class="bounce3"></div>
+          </div>`)
+         }
+         function loaderStop(){
+           var elements = document.getElementsByClassName('spinner');
+            while(elements.length > 0){
+                elements[0].parentNode.removeChild(elements[0]);
+            }
          }
          function displayDataTab(html){
            html = html || "Error!";
