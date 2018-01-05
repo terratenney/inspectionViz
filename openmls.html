@@ -386,6 +386,11 @@
   var map = new Map({
     basemap: "dark-gray-vector"
   });
+var bars = new Charts.BarChart('chart1', {
+  x_label_color: "#333333",
+  bar_width: 45,
+  rounding: 10,
+});
 
 var	 symbol =   new PointSymbol3D({
           symbolLayers: [new ObjectSymbol3DLayer({
@@ -494,10 +499,41 @@ view.then(function(){
 
 
 		view.on("click", function(evt) {
-
+			
             dataBank.parcels = dataBank.parcels||{}
             view.hitTest(evt.screenPoint).then(function(response) {
                 var graphic = response.results[0].graphic;
+				bars.clear();
+				bars.add({
+				  label: "MLS IN",
+				  value: graphic.attributes.MLSINSP
+				});
+
+				bars.add({
+				  label: "FIRE IN",
+				  value: graphic.attributes.FIREINSP,
+				  options: {
+					bar_color: "#53ba03"
+				  }
+				});
+				bars.add({
+				  label: "MLS IN",
+				  value: graphic.attributes.MLSVIO
+				});
+
+				bars.add({
+				  label: "FIRE IN",
+				  value: graphic.attributes.FIREVIOL,
+				  options: {
+					bar_color: "#53ba03"
+				  }
+				});
+
+				bars.draw();
+				
+				
+				
+				
                 function fireRequest(UID){
                   var fireInspectionsURL = `${API_URL}/dataproject/fire?$filter=RID eq '${UID}'`;
                   var deferred = new Deferred();
