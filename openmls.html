@@ -344,7 +344,7 @@
     <!-- /.container -->
     <script type="text/javascript">
     var dataBank = {};
-    var API_URL = 'https://was-inter-sit.toronto.ca/c3api_data/v2/DataAccess.svc/dataproject';
+    var API_URL = 'https://was-inter-sit.toronto.ca/c3api_data/v2/DataAccess.svc';
     var dojoConfig = {
         packages: [{
                 name: "bootstrap",
@@ -368,6 +368,8 @@
       "esri/widgets/Legend",
       "esri/symbols/PointSymbol3D",
       "esri/symbols/ObjectSymbol3DLayer",
+      "dojo/promise/all",
+      "dojo/Deferred",
 	  "dojo/request/xhr",
 	  "dojo/query",
 	  "bootstrap/Tab",
@@ -375,7 +377,7 @@
 	  "dojo/domReady!"
     ], function(
       Map, SceneView, FeatureLayer, Legend,PointSymbol3D,
-      ObjectSymbol3DLayer,xhr,query,tab
+      ObjectSymbol3DLayer,all, Deferred,xhr,query,tab
     ) {
 
   var map = new Map({
@@ -493,80 +495,106 @@ view.then(function(){
             dataBank.parcels = dataBank.parcels||{}
             view.hitTest(evt.screenPoint).then(function(response) {
                 var graphic = response.results[0].graphic;
+                function fireRequest(UID){
+                  var fireInspectionsURL = `${API_URL}/dataproject/fire?$filter=RID eq '${UID}'`;
+                  var deferred = new Deferred();
+                  xhr(fireInspectionsURL, {
+                      handleAs: "json"
+                  })
+                  .then(
+                    // success
+                    function(data){
+                      if (data.value.length==0){
+                        deferred.resolve([]);
+                      }
+                      else{
+                        var fireViolationsURL = `${API_URL}/fireprevention/extractInspection?$filter=propertyAddress eq '${data.value[0].PROPERTYAD}'&$orderby=INSPECTIONS_CLOSEDDATE desc,VIOLATIONS_ITEM_NUMBER asc`;
+                        xhr(fireViolationsURL, {
+                            handleAs: "json"
+                        })
+                        .then(
+                          // success
+                          function(data2){
+                            deferred.resolve([data.value,data2.value]);
+                          },
+                          //error
+                          function(){
+                            deferred.cancel("Fire Violations API failed");
+                          }
+                        );
+                      }
+                    },
+                    //error
+                    function(){
+                      deferred.cancel("Fire API failed");
+                    }
+                  );
+                  return deferred.promise;
+                }
+                function mlsRequest(UID){
+                  var deferred = new Deferred();
+                  var mlsInspectionsURL = `${API_URL}/dataproject/mls?$filter=RID eq '${UID}'`;
+                   xhr(mlsInspectionsURL, {
+                       handleAs: "json"
+                   })
+                  .then(
+                    // success
+                    function(data){
+                      if (data.value.length==0){
+                        deferred.resolve([]);
+                      }
+                      else{
+                        var mlsViolations =`${API_URL}/dataproject/def?$filter=INVESTIGATIONID eq '${data.value[0].INVESTIGATIONID}'`;
+                        if (data.value.length>1){
+                          for (var i = 1; i < data.value.length; i++) {
+                            mlsViolations += ` or INVESTIGATIONID eq '${data.value[i].INVESTIGATIONID}'`
+                          }
+                        }
+                        xhr(mlsViolations, {
+                            handleAs: "json"
+                        })
+                        .then(
+                          // success
+                          function(data2){
+                            deferred.resolve([data.value,data2.value]);
+                          },
+                          //error
+                          function(){
+                            deferred.cancel("MLS deficiencies API failed");
+                          }
+                        );
+                      }
+                    },
+                    //error
+                    function(){
+                      deferred.cancel("MLS API failed");
+                    }
+                  );
+                  return deferred.promise;
+                }
                 if (graphic) {
-                    console.log("Top graphic found! Here it is: ", graphic);
-
-                    var UID = graphic.attributes.OBJECTID;
+                    // console.log("Top graphic found! Here it is: ", graphic);
+                    var UID = graphic.attributes.OBJECTID||false;
+                    if (!UID) return false;
+                    dataBank.parcels[UID]=dataBank.parcels[UID]||{};
                     // check if data aready retrieved
-                    if(dataBank.parcels.hasOwnProperty(UID) && dataBank.parcels[UID].hasOwnProperty('fireInspections')){
+                    if(dataBank.parcels[UID].hasOwnProperty('fireInspections') && dataBank.parcels[UID].hasOwnProperty('mlsInspections')){
                       displayBuildingData(UID);
                     }
                     else {
                       loaderStart();
-                      dataBank.parcels[UID]={};
-                      //var fireInspectionsURL =`${API_URL}/fire?$filter=RID eq '211500'`;
-                       var fireInspectionsURL = `${API_URL}/fire?$filter=RID eq '${UID}'`;
-
-                      xhr(fireInspectionsURL, {
-                          handleAs: "json"
-                      })
-                      .then(
-                        // success
-                        function(data){
-                          console.log('API found');
-                          if (data.value.length>0){
-                            dataBank.parcels[UID].fireInspections=data.value[0];
-                            //var mlsInspectionsURL =`${API_URL}/mls?$filter=RID eq '522685'`;
-                             var mlsInspectionsURL = `${API_URL}/mls?$filter=RID eq '${UID}'`;
-                            xhr(mlsInspectionsURL, {
-                                handleAs: "json"
-                            })
-                            .then(
-                              // success
-                              function(mlsData){
-                                if(mlsData.value.length>0){
-                                  // store mls data and get investigation id
-                                  dataBank.parcels[UID].mlsInspections = mlsData.value[0];
-                                }
-                                var investigationID = mlsData.value[0].INVESTIGATIONID;
-                                // last API call to get deficiencies table data
-                                var deficienciesURL =`${API_URL}/def?$filter=INVESTIGATIONID eq '4064115'`;
-                                 //var deficienciesURL = `${API_URL}/def?$filter=INVESTIGATIONID eq '${investigationID}'`;
-                                xhr(deficienciesURL, {
-                                    handleAs: "json"
-                                })
-                                .then(
-                                  // success
-                                  function(defData){
-                                    if (defData.value.length!=0){
-                                      dataBank.parcels[UID].deficiencies = defData.value;
-                                    }
-                                    displayBuildingData(UID);
-                                     loaderStop();
-                                  },
-                                  //error
-                                  function(){
-                                    displayDataTab('Error retrieving deficiencies data from the server. Please try again later.')
-                                  }
-                                )
-                              },
-                              //error
-                              function(){
-                                displayDataTab('Error retrieving MLS data from the server. Please try again later.')
-                              }
-                            )
-                          }
-                        },
-                        //error
-                        function(){
-                          console.log('API not found');
-                         // alert('Error retrieving Fire Inspections data from the server. Please try again later.')
+                      all([fireRequest(UID),mlsRequest(UID)])
+                      .then(function(results){
+                        loaderStop();
+                        dataBank.parcels[UID]={
+                          fireInspections: results[0],
+                          mlsInspections: results[1]
                         }
-                      )
+                        displayBuildingData(UID)
+                      });
                     }
 
                 }
-
             });
         });
 
@@ -577,8 +605,7 @@ view.then(function(){
           openDrawer('selecteddata');
           console.log(dataBank.parcels[uid])
           var isFire = dataBank.parcels[uid].hasOwnProperty('fireInspections'),
-              isMls =  dataBank.parcels[uid].hasOwnProperty('mlsInspections'),
-              isDef =  dataBank.parcels[uid].hasOwnProperty('deficiencies'),
+              isMls =  dataBank.parcels[uid].hasOwnProperty('mlsInspections')
               fireInspections = isFire?dataBank.parcels[uid].fireInspections:null,
               mlsInspections = isMls?dataBank.parcels[uid].mlsInspections:null,
               deficiencies = isDef?dataBank.parcels[uid].deficiencies:[]
