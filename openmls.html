@@ -395,7 +395,11 @@
             var map = new Map({
                 basemap: "dark-gray-vector"
             });
-
+				var chart = new Charts.BarChart('chart1', {
+                    show_grid: true,
+                    label_max: true,
+                    label_min: true
+                });
             var symbol = new PointSymbol3D({
                 symbolLayers: [new ObjectSymbol3DLayer({
                     resource: {
@@ -504,48 +508,51 @@
 
 
             view.on("click", function(evt) {
-            	              // If you want to override default options 
 
-            	              //grab values from api? or feature? 
-
-                var chart = new Charts.BarChart('chart1', {
-                    show_grid: false,
-                    label_max: true,
-                    label_min: true
-                });
-
-                chart.add({
-                    label: "MlS Inspections",
-                    value: 300
-                });
-
-                chart.add({
-                    label: "MlS Violations",
-                    value: 800,
-                    options: {
-                        bar_color: "#af8dc3"
-                    }
-                });
-
-                chart.add({
-                    label: "Fire Inspections",
-                    value: 300,
-                      options: {
-                        bar_color: "#ffffbf"
-                    }
-                });
-
-                chart.add({
-                    label: "Fire Violations",
-                    value: 800,
-                    options: {
-                        bar_color: "#7fbf7b"
-                    }
-                });
                 dataBank.parcels = dataBank.parcels || {}
                 view.hitTest(evt.screenPoint).then(function(response) {
                     var graphic = response.results[0].graphic;
+				// If you want to override default options 
 
+            	//grab values from api? or feature? 
+
+				chart.clear();
+                chart.add({
+                    label: "MlS_I",
+                    value: graphic.attributes.MLSINSP,
+                    options: {
+						bar_width:55,
+                        bar_color: "#2c7fb8"
+                    }
+                });
+         
+                chart.add({
+                    label: "Fire_I",
+                    value:graphic.attributes.FIREINSP,
+                      options: {
+					  bar_width:55,
+                        bar_color: "#7fcdbb"
+                    }
+                });
+				                chart.add({
+                    label: "MlS_V",
+                    value: graphic.attributes.MLSVIO,
+                    options: {
+						bar_width:55,
+                        bar_color: "#feb24c"
+                    }
+                });
+         
+                chart.add({
+                    label: "Fire_V",
+                    value:graphic.attributes.FIREVIOL,
+                      options: {
+					  bar_width:55,
+                        bar_color: "#d95f0e"
+                    }
+                });
+				chart.draw();
+				console.log(graphic);
                     function fireRequest(UID) {
                         var fireInspectionsURL = `${API_URL}/dataproject/fire?$filter=RID eq '${UID}'`;
                         var deferred = new Deferred();
@@ -653,6 +660,9 @@
                 }
                 openDrawer('selecteddata');
                 console.log(dataBank.parcels[uid])
+				
+  
+
                 var isFire = dataBank.parcels[uid].hasOwnProperty('fireInspections'),
                     isMls = dataBank.parcels[uid].hasOwnProperty('mlsInspections')
                 fireInspections = isFire ? dataBank.parcels[uid].fireInspections : null,
@@ -701,7 +711,6 @@
             </div>`;
                 }
   
-
 
                 // display HTML in tab
                 displayDataTab(html);
