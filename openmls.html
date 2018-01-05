@@ -12,7 +12,9 @@
     <link rel="stylesheet" href="http://esri.github.com/calcite-maps/dist/css/calcite-bootstrap.min-v0.2.css">
     <!-- Calcite Maps -->
     <link rel="stylesheet" href="http://esri.github.com/calcite-maps/dist/css/calcite-maps-arcgis-4.x.min-v0.2.css">
-    <style>
+    <script src="js/raphael.min.js"></script>
+    <script src="js/charts.min.js"></script>
+	<style>
     html,
     body {
         margin: 0;
@@ -183,7 +185,7 @@
               <div class="panel-heading">
                 <h4 class="panel-title"><a data-toggle="collapse" data-parent="#accordionSettings" href="#collapseTwo">Descriptive Information</a></h4></div>
               <div id="collapseTwo" class="panel-collapse collapse">
-                <div class="panel-body">Descriptive info goes here </div>
+                <div class="panel-body"><div id='chart1' style='width: 250px; height: 350px;'></div></div>
               </div>
             </div>
             <div class="panel panel-default">
@@ -287,10 +289,6 @@
                    </div>
                   </div>
                   </div>
-
-
-
-
 
                   </form>
 
@@ -467,7 +465,10 @@ var	 symbol =   new PointSymbol3D({
 // 						"<li><b>{FIREVIOL}</b> FIRE violations</li></ul>"
 // }
   });
-
+var bar = new Charts.BarChart('chart1', {
+  x_padding: 1,
+  y_padding: 1
+});
   map.add(featureLayer);
 
         var view = new SceneView({
@@ -491,10 +492,31 @@ view.then(function(){
 
 
 		view.on("click", function(evt) {
-
+			
             dataBank.parcels = dataBank.parcels||{}
             view.hitTest(evt.screenPoint).then(function(response) {
                 var graphic = response.results[0].graphic;
+				console.log(graphic);
+				bar.clear();
+				bar.add({
+				  label: "mls",
+				  value: graphic.attributes.MLSINSP,
+				  options: {
+					bar_width:25
+				  }
+				});				
+				bar.add({
+				  label: "fire",
+				  value: graphic.attributes.FIREINSP,
+				  options: {
+					bar_color: "#53ba03",
+					bar_width:25
+				  }
+				});				
+			
+				bar.draw();
+				
+				
                 function fireRequest(UID){
                   var fireInspectionsURL = `${API_URL}/dataproject/fire?$filter=RID eq '${UID}'`;
                   var deferred = new Deferred();
