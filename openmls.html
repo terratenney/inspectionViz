@@ -305,7 +305,15 @@
     </div>
     <div role="tabpanel" class="tab-pane" id="cart">
       <div class="innertab innertab--cart">
-        Your cart is empty, you don't have anything to download.
+        <div class="row">
+          <div class="col-xs-12"><h3>Download Cart</h3></div>
+        </div>
+        <div class="row" id="cartContent">
+          <div class="col-xs-12">
+            Your cart is empty, you don't have anything to download.
+          </div>
+        </div>
+
       </div>
     </div>
   </div>
@@ -759,6 +767,10 @@ view.then(function(){
            html = html || "Error!";
            query('#selecteddata .innertab').attr("innerHTML", html);
          }
+         function displayCartTab(html){
+           html = html || "Error!";
+           query('#cartContent').attr("innerHTML", html);
+         }
          // on button click -> toggle the drawer
          document.getElementsByClassName('js-drawer-toggle')[0].addEventListener('click', toggleDrawer);
          // close the drawer if click on brand
@@ -778,8 +790,21 @@ view.then(function(){
         function add2cart(uid){
           dataBank.cart = dataBank.cart||{};
           dataBank.cart[uid]=dataBank.parcels[uid];
-          console.log(uid + ' added to cart')
         }
+        function displayCart(){
+            var htmlcart = '';
+            for (var uid in dataBank.cart) {
+              if (dataBank.cart.hasOwnProperty(uid)) {
+                htmlcart += `<div class="col-xs-10">${dataBank.cart[uid].fireInspections[0][0].PROPERTYAD}</div>
+                <div class="col-xs-2"><button class="btn btn-xs">X</button></div>`
+              }
+            }
+            if(htmlcart != '') displayCartTab(htmlcart);
+            console.log(htmlcart);
+        }
+
+        // on Cart Tab select
+        query('a[href="#cart"]').on('click', displayCart)
     });
 
     </script>
