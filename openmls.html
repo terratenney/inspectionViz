@@ -628,7 +628,7 @@ view.then(function(){
           openDrawer('selecteddata');
           console.log(dataBank.parcels[uid]);
           var isFire = dataBank.parcels[uid].hasOwnProperty('fireInspections') && Array.isArray(dataBank.parcels[uid].fireInspections),
-              isMls =  dataBank.parcels[uid].hasOwnProperty('mlsInspections') && Array.isArray(dataBank.parcels[uid].mlsInspections)
+              isMls =  dataBank.parcels[uid].hasOwnProperty('mlsInspections') && Array.isArray(dataBank.parcels[uid].mlsInspections),
               building = (function(){
                 var objReturn = {};
                 if (isFire && dataBank.parcels[uid].fireInspections[0][0]){
@@ -648,10 +648,10 @@ view.then(function(){
                 }
                 return objReturn;
               })(),
-              violations =  isFire?dataBank.parcels[uid].fireInspections[1]:null,
+              violations =  isFire?dataBank.parcels[uid].fireInspections[1].filter(function(el){return el.VIOLATIONS_ITEM_NUMBER!=0}):[],
               mlsInspections = isMls?dataBank.parcels[uid].mlsInspections[0]:null,
               deficiencies = isMls?dataBank.parcels[uid].mlsInspections[1]:[];
-
+            console.log(building);
           // display Building info
           var html = `<div class="row">
             <div class="col-xs-12"><h3>Building Report</h3></div>
@@ -662,11 +662,34 @@ view.then(function(){
             <div class="col-xs-12">${building.fireInspectionSummary.inspections} Fire Inspection${building.fireInspectionSummary.inspections>1?`s`:``} (${building.fireInspectionSummary.violations} Violation${building.fireInspectionSummary.violations>1?`s`:``})</div>
             <div class="col-xs-12">${building.mlsInspectionSummary.inspections} MLS Inspection${building.mlsInspectionSummary.inspections>1?`s`:``} (${building.mlsInspectionSummary.violations} Violation${building.mlsInspectionSummary.violations>1?`s`:``})</div>
           </div>`;
-          if (isFire){
+          // Fire Code violations
+          if (isFire && violations.length>0){
             html+=`<div class="row"><div class="col-xs-12">
               &nbsp;
             </div></div><div class="row">
-              <div class="col-xs-12"><strong>Fire Inspections</strong></div>
+              <div class="col-xs-12"><h5>Fire Inspections</h5></div>
+              <div class="col-xs-12"><table class="table table-stripped table-condensed">
+                <thead>
+                  <tr>
+                    <th>Violation description</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  ${violations.map(function(obj){
+                    return `<tr>
+                      <td>${obj.VIOLATION_DESCRIPTION||'n/a'}</td>
+                    </tr>`
+                  }).join('')}
+                </tbody>
+              </table></div>
+            </div>`;
+          }
+          // MLS inspections
+          if (isMls && deficiencies.length>0){
+            html+=`<div class="row"><div class="col-xs-12">
+              &nbsp;
+            </div></div><div class="row">
+              <div class="col-xs-12"><h5>MLS Inspections</h5></div>
               <div class="col-xs-12"><table class="table table-stripped table-condensed">
                 <thead>
                   <tr>
@@ -678,8 +701,8 @@ view.then(function(){
                 <tbody>
                   ${deficiencies.map(function(obj){
                     return `<tr>
-                      <td>${obj.LOCATION}</td>
-                      <td>${obj.SUBLOCATION}</td>
+                      <td>${obj.LOCATION||'n/a'}</td>
+                      <td>${obj.SUBLOCATION||'n/a'}</td>
                       <td>${obj.STATUS}</td>
                     </tr>
                     <tr>
