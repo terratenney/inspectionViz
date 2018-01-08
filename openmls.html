@@ -492,31 +492,31 @@ view.then(function(){
 
 
 		view.on("click", function(evt) {
-			
+
             dataBank.parcels = dataBank.parcels||{}
             view.hitTest(evt.screenPoint).then(function(response) {
                 var graphic = response.results[0].graphic;
-				console.log(graphic);
-				bar.clear();
-				bar.add({
-				  label: "mls",
-				  value: graphic.attributes.MLSINSP,
-				  options: {
-					bar_width:25
-				  }
-				});				
-				bar.add({
-				  label: "fire",
-				  value: graphic.attributes.FIREINSP,
-				  options: {
-					bar_color: "#53ba03",
-					bar_width:25
-				  }
-				});				
-			
-				bar.draw();
-				
-				
+    				console.log(graphic);
+    				bar.clear();
+    				bar.add({
+    				  label: "mls",
+    				  value: graphic.attributes.MLSINSP,
+    				  options: {
+    					bar_width:25
+    				  }
+    				});
+    				bar.add({
+    				  label: "fire",
+    				  value: graphic.attributes.FIREINSP,
+    				  options: {
+    					bar_color: "#53ba03",
+    					bar_width:25
+    				  }
+    				});
+
+    				bar.draw();
+
+
                 function fireRequest(UID){
                   var fireInspectionsURL = `${API_URL}/dataproject/fire?$filter=RID eq '${UID}'`;
                   var deferred = new Deferred();
@@ -600,6 +600,7 @@ view.then(function(){
                     if (!UID) return false;
                     dataBank.parcels[UID]=dataBank.parcels[UID]||{};
                     // check if data aready retrieved
+                    openDrawer('selecteddata');
                     if(dataBank.parcels[UID].hasOwnProperty('fireInspections') && dataBank.parcels[UID].hasOwnProperty('mlsInspections')){
                       displayBuildingData(UID);
                     }
@@ -658,8 +659,8 @@ view.then(function(){
             <div class="col-xs-8">${building.address}</div>
             <div class="col-xs-4">Owner</div>
             <div class="col-xs-8">${building.owner||'n/a'}</div>
-            <div class="col-xs-12">${building.fireInspectionSummary.inspections} Fire Inspections (${building.fireInspectionSummary.violations} Violations)</div>
-            <div class="col-xs-12">${building.mlsInspectionSummary.inspections} MLS Inspections (${building.mlsInspectionSummary.violations} Violations)</div>
+            <div class="col-xs-12">${building.fireInspectionSummary.inspections} Fire Inspection${building.fireInspectionSummary.inspections>1?`s`:``} (${building.fireInspectionSummary.violations} Violation${building.fireInspectionSummary.violations>1?`s`:``})</div>
+            <div class="col-xs-12">${building.mlsInspectionSummary.inspections} MLS Inspection${building.mlsInspectionSummary.inspections>1?`s`:``} (${building.mlsInspectionSummary.violations} Violation${building.mlsInspectionSummary.violations>1?`s`:``})</div>
           </div>`;
           if (isFire){
             html+=`<div class="row"><div class="col-xs-12">
