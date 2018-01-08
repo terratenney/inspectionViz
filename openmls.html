@@ -664,33 +664,43 @@
           });
         });
 
+        //////////////////////////////////
+        // Data tab functions
+        //////////////////////////////////
+        function displayDataTab(html) {
+          html = html || "Error!";
+          query('#selecteddata .innertab').attr("innerHTML", html);
+        }
+        function getBuildingData(uid){
+          var objReturn = {},
+          isFire = dataBank.parcels[uid].hasOwnProperty('fireInspections') && Array.isArray(dataBank.parcels[uid].fireInspections),
+          isMls = dataBank.parcels[uid].hasOwnProperty('mlsInspections') && Array.isArray(dataBank.parcels[uid].mlsInspections);
+          if (isFire && dataBank.parcels[uid].fireInspections[0][0]) {
+            objReturn.address = dataBank.parcels[uid].fireInspections[0][0].PROPERTYAD;
+            objReturn.owner = dataBank.parcels[uid].fireInspections[0][0].PROPERTY_O || 'n/a';
+            objReturn.fireInspectionSummary = {
+              inspections: parseInt(dataBank.parcels[uid].fireInspections[0][0].INSPECTION),
+              violations: parseInt(dataBank.parcels[uid].fireInspections[0][0].VIOLATIONS)
+            };
+          }
+          if (isMls && dataBank.parcels[uid].mlsInspections[0][0]) {
+            objReturn.address = objReturn.address || dataBank.parcels[uid].mlsInspections[0][0].ADDRESS;
+            objReturn.mlsInspectionSummary = {
+              inspections: dataBank.parcels[uid].mlsInspections[0].length,
+              violations: dataBank.parcels[uid].mlsInspections[1].length,
+            }
+          }
+          return objReturn;
+        }
         function displayBuildingData(uid) {
           if (!dataBank.parcels.hasOwnProperty(uid)) {
             return false;
           }
           openDrawer('selecteddata');
-          console.log(dataBank.parcels[uid]);
+          //console.log(dataBank.parcels[uid]);
           var isFire = dataBank.parcels[uid].hasOwnProperty('fireInspections') && Array.isArray(dataBank.parcels[uid].fireInspections),
             isMls = dataBank.parcels[uid].hasOwnProperty('mlsInspections') && Array.isArray(dataBank.parcels[uid].mlsInspections),
-            building = (function() {
-              var objReturn = {};
-              if (isFire && dataBank.parcels[uid].fireInspections[0][0]) {
-                objReturn.address = dataBank.parcels[uid].fireInspections[0][0].PROPERTYAD;
-                objReturn.owner = dataBank.parcels[uid].fireInspections[0][0].PROPERTY_O || 'n/a';
-                objReturn.fireInspectionSummary = {
-                  inspections: parseInt(dataBank.parcels[uid].fireInspections[0][0].INSPECTION),
-                  violations: parseInt(dataBank.parcels[uid].fireInspections[0][0].VIOLATIONS)
-                };
-              }
-              if (isMls && dataBank.parcels[uid].mlsInspections[0][0]) {
-                objReturn.address = objReturn.address || dataBank.parcels[uid].mlsInspections[0][0].ADDRESS;
-                objReturn.mlsInspectionSummary = {
-                  inspections: dataBank.parcels[uid].mlsInspections[0].length,
-                  violations: dataBank.parcels[uid].mlsInspections[1].length,
-                }
-              }
-              return objReturn;
-            })(),
+            building = getBuildingData(uid),
             violations = isFire ? dataBank.parcels[uid].fireInspections[1].filter(function(el) {
               return el.VIOLATIONS_ITEM_NUMBER != 0
             }) : [],
@@ -773,17 +783,19 @@
             })
           }
         }
+
+        //////////////////////////////////
+        // Drawer functions
+        //////////////////////////////////
         // show/hide/toggle drawer
         function openDrawer(tabName) {
           tabName = tabName || 'settings';
           document.getElementsByClassName('js-drawer')[0].classList.add('is-active');
           query('a[href="#' + tabName + '"]').tab('show')
         }
-
         function closeDrawer() {
           document.getElementsByClassName('js-drawer')[0].classList.remove('is-active');
         }
-
         function toggleDrawer() {
           if (document.getElementsByClassName('js-drawer')[0].classList.contains('is-active')) {
             closeDrawer()
@@ -791,6 +803,27 @@
             openDrawer()
           }
         }
+        // on button click -> toggle the drawer
+        document.getElementsByClassName('js-drawer-toggle')[0].addEventListener('click', toggleDrawer);
+        // close the drawer if click on brand
+        document.getElementById('calciteToggleNavbar').addEventListener('click', closeDrawer);
+        // hit escape to close drawer
+        document.onkeydown = function(evt) {
+          evt = evt || window.event;
+          var isEscape = false;
+          if ("key" in evt) {
+            isEscape = (evt.key == "Escape" || evt.key == "Esc");
+          } else {
+            isEscape = (evt.keyCode == 27);
+          }
+          if (isEscape) {
+            closeDrawer();
+          }
+        };
+
+        //////////////////////////////////
+        // Preloader functions
+        //////////////////////////////////
         // preloader
         function loaderStart() {
           displayDataTab(`<div class="spinner">
@@ -799,7 +832,6 @@
             <div class="bounce3"></div>
           </div>`)
         }
-
         function loaderStop() {
           var elements = document.getElementsByClassName('spinner');
           while (elements.length > 0) {
@@ -807,10 +839,6 @@
           }
         }
 
-        function displayDataTab(html) {
-          html = html || "Error!";
-          query('#selecteddata .innertab').attr("innerHTML", html);
-        }
         /////////////////////////////////////
         // cart functions
         /////////////////////////////////////
@@ -818,14 +846,10 @@
           html = html || "Error!";
           query('#cartContent').attr("innerHTML", html);
         }
-        // on Cart Tab select
-        query('a[href="#cart"]').on('click', displayCart);
-
         function add2cart(uid) {
           dataBank.cart = dataBank.cart || {};
           dataBank.cart[uid] = dataBank.parcels[uid];
         }
-
         function deleteFromCart(item) {
           var uid = item.target.dataset.uid;
           if (dataBank.cart.hasOwnProperty(uid)) {
@@ -833,7 +857,6 @@
           }
           displayCart();
         }
-
         function displayCart() {
           var htmlcart = '';
           for (var uid in dataBank.cart) {
@@ -843,14 +866,55 @@
             }
           }
           if (htmlcart != '') {
+            htmlcart+='<div class="col-xs-12 text-right"><button class="btn btn-sm downloadData">Download Data as CSV (Excel)</button></div>';
             displayCartTab(htmlcart);
             query(".deleteCart").on('click', deleteFromCart);
+            query(".downloadData").on('click', downloadData);
           } else {
             displayCartTab(`<div class="col-xs-12">
                 Your cart is empty, you don't have anything to download.
               </div>`);
           }
         }
+        function downloadData(){
+          var now = new Date();
+          var filename=`buildingData_${now.getTime()}.csv`;
+          // create proper object to be transformed to csv
+          var rows = [];
+          for (var uid in dataBank.cart) {
+            if (dataBank.cart.hasOwnProperty(uid)) {
+              var isFire = dataBank.parcels[uid].hasOwnProperty('fireInspections') && Array.isArray(dataBank.parcels[uid].fireInspections),
+              isMls = dataBank.parcels[uid].hasOwnProperty('mlsInspections') && Array.isArray(dataBank.parcels[uid].mlsInspections),building = getBuildingData(uid),
+              violations = isFire ? dataBank.parcels[uid].fireInspections[1].filter(function(el) {
+                return el.VIOLATIONS_ITEM_NUMBER != 0
+              }) : [],
+              deficiencies = isMls ? dataBank.parcels[uid].mlsInspections[1] : [];
+              if (violations.length>0){
+                for (var i = 0; i < violations.length; i++) {
+                  rows.push([
+                    building.address,
+                    building.owner,
+                    'Fire Code Violation',
+                    violations[i].VIOLATION_DESCRIPTION
+                  ])
+                }
+              }
+              if (deficiencies.length>0){
+                for (var j = 0; j < deficiencies.length; j++) {
+                  rows.push([
+                    building.address,
+                    building.owner,
+                    'MLS Inspection deficiency',
+                    deficiencies[j].DETAILS
+                  ])
+                }
+              }
+            }
+          }
+          exportToCsv(filename, rows);
+        }
+        // on Cart Tab select
+        query('a[href="#cart"]').on('click', displayCart);
         // grabbed here => https://stackoverflow.com/questions/14964035/how-to-export-javascript-array-info-to-csv-on-client-side
         function exportToCsv(filename, rows) {
           var processRow = function(row) {
@@ -892,22 +956,6 @@
             }
           }
         }
-        // on button click -> toggle the drawer
-        document.getElementsByClassName('js-drawer-toggle')[0].addEventListener('click', toggleDrawer);
-        // close the drawer if click on brand
-        document.getElementById('calciteToggleNavbar').addEventListener('click', closeDrawer);
-        document.onkeydown = function(evt) {
-          evt = evt || window.event;
-          var isEscape = false;
-          if ("key" in evt) {
-            isEscape = (evt.key == "Escape" || evt.key == "Esc");
-          } else {
-            isEscape = (evt.keyCode == 27);
-          }
-          if (isEscape) {
-            closeDrawer();
-          }
-        };
       });
     </script>
   </div>
