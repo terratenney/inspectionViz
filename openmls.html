@@ -309,9 +309,7 @@
           <div class="col-xs-12"><h3>Download Cart</h3></div>
         </div>
         <div class="row" id="cartContent">
-          <div class="col-xs-12">
-            Your cart is empty, you don't have anything to download.
-          </div>
+
         </div>
 
       </div>
@@ -791,20 +789,34 @@ view.then(function(){
           dataBank.cart = dataBank.cart||{};
           dataBank.cart[uid]=dataBank.parcels[uid];
         }
+        function deleteFromCart(item){
+          var uid = item.target.dataset.uid;
+          if (dataBank.cart.hasOwnProperty(uid)){
+            delete dataBank.cart[uid];
+          }
+          displayCart();
+        }
         function displayCart(){
             var htmlcart = '';
             for (var uid in dataBank.cart) {
               if (dataBank.cart.hasOwnProperty(uid)) {
                 htmlcart += `<div class="col-xs-10">${dataBank.cart[uid].fireInspections[0][0].PROPERTYAD}</div>
-                <div class="col-xs-2"><button class="btn btn-xs">X</button></div>`
+                <div class="col-xs-2"><p><button class="btn btn-xs deleteCart" data-uid="${uid}">X</button></p></div>`
               }
             }
-            if(htmlcart != '') displayCartTab(htmlcart);
-            console.log(htmlcart);
+            if(htmlcart != '') {
+              displayCartTab(htmlcart);
+              query(".deleteCart").on('click',deleteFromCart);
+            }
+            else{
+              displayCartTab(`<div class="col-xs-12">
+                Your cart is empty, you don't have anything to download.
+              </div>`);
+            }
         }
 
         // on Cart Tab select
-        query('a[href="#cart"]').on('click', displayCart)
+        query('a[href="#cart"]').on('click', displayCart);
     });
 
     </script>
