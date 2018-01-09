@@ -8,7 +8,7 @@
   <meta name="description" content="Calcite Maps - ArcGIS 4.x SDK Sample">
   <link rel="icon" href="http://www.esri.com/favicon.ico">
   <title>Calcite Maps - ArcGIS JS 4.0 Example</title>
-  <!-- Calcite Bootstrap -- THis is a esri template based on bootstrap that might be useful https://github.com/Esri/calcite-maps-->
+  <!-- Calcite Bootstrap  THis is a esri template based on bootstrap that might be useful https://github.com/Esri/calcite-maps-->
   <link rel="stylesheet" href="http://esri.github.com/calcite-maps/dist/css/calcite-bootstrap.min-v0.2.css">
   <!-- Calcite Maps -->
   <link rel="stylesheet" href="http://esri.github.com/calcite-maps/dist/css/calcite-maps-arcgis-4.x.min-v0.2.css">
@@ -508,12 +508,33 @@
           // 						"<li><b>{FIREVIOL}</b> FIRE violations</li></ul>"
           // }
         });
-        var bar = new Charts.BarChart('chart1', {
-          x_padding: 1,
-          y_padding: 1
-        });
+//         var bar = new Charts.BarChart('chart1', {
+//          bar_width: 25,
+//            rounding: 10,
+// });
         map.add(featureLayer);
-
+        var featureLayer1 = new FeatureLayer({
+          url: "https://services5.arcgis.com/5R55vsKfq7f14num/ArcGIS/rest/services/ZONING_ZONE_CATAGORIES_WGS84/FeatureServer/0",
+          title: "Property Inspection Violations",
+          //renderer: renderer,
+          outFields: ["*"],
+          opacity:.25
+          //  popupTemplate: { // autocasts as new PopupTemplate()
+          //   title: "ParcelID: {RID}",
+          //   content: "<p>The property located at, <b>{Match_addr}</b> owened by " +
+          //            " <b>{PROPERTY_O}</b> had the following MLS and FIRE inspection/violation information:</p>" +
+          //            "<ul><b>{MLSINSP}</b> MLS inspections with</li>" +
+          //            "<li><b>{MLSVIO}</b> MLS violations</li></ul>" +
+          //            "<ul><li><b>{FIREINSP}</b> FIRE inspections with</li>" +
+          //            "<li><b>{FIREVIOL}</b> FIRE violations</li></ul>"
+          // }
+        });
+//         var bar = new Charts.BarChart('chart1', {
+//          bar_width: 25,
+//            rounding: 10,
+// });
+      console.log(featureLayer1);
+        map.add(featureLayer1);
         var view = new SceneView({
           container: "mapViewDiv",
           padding: {
@@ -544,22 +565,32 @@
             var graphic = response.results[0].graphic;
             //console.log(graphic);
             bar.clear();
+            // bar.add({
+            //   label: "MLSViol",
+            //   value: graphic.attributes.MLSINSP,
+            //   options: {
+            //     bar_color: "#99d8c9",
+    
+            //   }
+            // });
+            // bar.add({
+            //   label: "MLSInsp",
+            //   value: graphic.attributes.MLSVIO,
+            //   options: {
+            //     bar_color: "#2ca25f",              }
+            // });
             bar.add({
-              label: "mls",
-              value: graphic.attributes.MLSINSP,
-              options: {
-                bar_width: 25
-              }
-            });
-            bar.add({
-              label: "fire",
+              label: "FireInsp",
               value: graphic.attributes.FIREINSP,
               options: {
-                bar_color: "#53ba03",
-                bar_width: 25
-              }
+                bar_color: "#bcbddc"              }
             });
-
+                  bar.add({
+              label: "FireVIO",
+              value: graphic.attributes.FIREVOL,
+              options: {
+                bar_color: "#756bb1"              }
+            });
             bar.draw();
 
             // promise to return fire request
