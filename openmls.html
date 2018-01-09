@@ -550,10 +550,7 @@
 //         map.add(featureLayer2);
 
 
-        var bar = new Charts.BarChart('chart1', {
-         bar_width: 25,
-           rounding: 10,
-});
+        var bar = new Charts.BarChart('chart1', {});
       console.log(featureLayer1);
         map.add(featureLayer1);
         var view = new SceneView({
@@ -590,34 +587,34 @@
 
           view.hitTest(evt.screenPoint).then(function(response) {
             var graphic = response.results[0].graphic;
-            //console.log(graphic);
+            console.log(graphic);
             bar.clear();
-            // bar.add({
-            //   label: "MLSViol",
-            //   value: graphic.attributes.MLSINSP,
-            //   options: {
-            //     bar_color: "#99d8c9",
-
-            //   }
-            // });
-            // bar.add({
-            //   label: "MLSInsp",
-            //   value: graphic.attributes.MLSVIO,
-            //   options: {
-            //     bar_color: "#2ca25f",              }
-            // });
             bar.add({
-              label: "FireInsp",
+              label: "MI",
+              value: graphic.attributes.MLSINSP,
+              options: {
+                bar_color: "#99d8c9",
+
+              }
+            });
+            bar.add({
+              label: "MV",
+              value: graphic.attributes.MLSVIO,
+              options: {
+                bar_color: "#2ca25f",              }
+            });
+            bar.add({
+              label: "FI",
               value: graphic.attributes.FIREINSP,
               options: {
                 bar_color: "#bcbddc"              }
             });
-                  bar.add({
-              label: "FireVIO",
-              value: graphic.attributes.FIREVOL,
-              options: {
-                bar_color: "#756bb1"              }
-            });
+            //       bar.add({
+            //   label: "FI",
+            //   value: graphic.attributes.FIREVOL,
+            //   options: {
+            //     bar_color: "#756bb1"              }
+            // });
             bar.draw();
 
             // promise to return fire request
