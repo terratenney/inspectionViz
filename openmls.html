@@ -222,6 +222,7 @@
                   <h4 class="panel-title"><a data-toggle="collapse" data-parent="#accordionSettings" href="#collapseTwo">Descriptive Information</a></h4></div>
                 <div id="collapseTwo" class="panel-collapse collapse">
                   <div class="panel-body">
+                         <div class="row"><div class="col-xs-12" id="layerList"></div></div>
                     <div id='chart1' style='width: 250px; height: 300px;'></div>
                   </div>
                 </div>
@@ -576,11 +577,11 @@
 
         //view.ui.add(legend, "bottom-right");
         var layerList = new LayerList({
-          view: view
+          view: view,container: "layerList"
         });
 
         // Add widget to the top right corner of the view
-        view.ui.add(layerList, "bottom-left");
+        //view.ui.add(layerList, "bottom-left");
 
         view.on("click", function(evt) {
           // data storage
