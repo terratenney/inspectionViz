@@ -212,7 +212,9 @@
                 <div class="panel-heading">
                   <h4 class="panel-title"><a data-toggle="collapse" data-parent="#accordionSettings" href="#collapseOne">Legend</a></h4></div>
                 <div id="collapseOne" class="panel-collapse collapse">
-                  <div class="panel-body">Legend goes here.</div>
+                  <div class="panel-body">
+                    <div class="row"><div class="col-xs-12" id="legendary"></div></div>
+                  </div>
                 </div>
               </div>
               <div class="panel panel-default">
@@ -547,10 +549,11 @@
           })
         });
         var legend = new Legend({
-          view: view
+          view: view,
+          container:'legendary'
         });
 
-        view.ui.add(legend, "bottom-right");
+        //view.ui.add(legend, "bottom-right");
 
 
         view.on("click", function(evt) {
@@ -567,7 +570,7 @@
             //   value: graphic.attributes.MLSINSP,
             //   options: {
             //     bar_color: "#99d8c9",
-    
+
             //   }
             // });
             // bar.add({
