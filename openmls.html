@@ -508,10 +508,7 @@
           // 						"<li><b>{FIREVIOL}</b> FIRE violations</li></ul>"
           // }
         });
-//         var bar = new Charts.BarChart('chart1', {
-//          bar_width: 25,
-//            rounding: 10,
-// });
+
         map.add(featureLayer);
         var featureLayer1 = new FeatureLayer({
           url: "https://services5.arcgis.com/5R55vsKfq7f14num/ArcGIS/rest/services/ZONING_ZONE_CATAGORIES_WGS84/FeatureServer/0",
@@ -529,10 +526,10 @@
           //            "<li><b>{FIREVIOL}</b> FIRE violations</li></ul>"
           // }
         });
-//         var bar = new Charts.BarChart('chart1', {
-//          bar_width: 25,
-//            rounding: 10,
-// });
+        var bar = new Charts.BarChart('chart1', {
+         bar_width: 25,
+           rounding: 10,
+});
       console.log(featureLayer1);
         map.add(featureLayer1);
         var view = new SceneView({
