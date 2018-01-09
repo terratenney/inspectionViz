@@ -410,7 +410,7 @@
         "esri/layers/FeatureLayer",
         "esri/widgets/Legend",
         "esri/symbols/PointSymbol3D",
-        "esri/symbols/ObjectSymbol3DLayer",
+        "esri/symbols/ObjectSymbol3DLayer","esri/widgets/LayerList",
         "dojo/promise/all",
         "dojo/Deferred",
         "dojo/request/xhr",
@@ -420,7 +420,7 @@
         "dojo/domReady!"
       ], function(
         Map, SceneView, FeatureLayer, Legend, PointSymbol3D,
-        ObjectSymbol3DLayer, all, Deferred, xhr, query, tab
+        ObjectSymbol3DLayer, LayerList, all, Deferred, xhr, query, tab
       ) {
 
         var map = new Map({
@@ -514,7 +514,7 @@
         map.add(featureLayer);
         var featureLayer1 = new FeatureLayer({
           url: "https://services5.arcgis.com/5R55vsKfq7f14num/ArcGIS/rest/services/ZONING_ZONE_CATAGORIES_WGS84/FeatureServer/0",
-          title: "Property Inspection Violations",
+          title: "Zoning Areas",
           //renderer: renderer,
           outFields: ["*"],
           opacity:.25
@@ -527,7 +527,28 @@
           //            "<ul><li><b>{FIREINSP}</b> FIRE inspections with</li>" +
           //            "<li><b>{FIREVIOL}</b> FIRE violations</li></ul>"
           // }
-        });
+         });
+// var featureLayer2 = new FeatureLayer({
+//           url: "https://services5.arcgis.com/5R55vsKfq7f14num/arcgis/rest/services/mls_inspections_geocoded_pts_1/FeatureServer/0",
+//           title: "MLS All Inspections",
+//           //renderer: renderer,
+//           outFields: ["*"],
+//           opacity:.65
+//           //  popupTemplate: { // autocasts as new PopupTemplate()
+//           //   title: "ParcelID: {RID}",
+//           //   content: "<p>The property located at, <b>{Match_addr}</b> owened by " +
+//           //            " <b>{PROPERTY_O}</b> had the following MLS and FIRE inspection/violation information:</p>" +
+//           //            "<ul><b>{MLSINSP}</b> MLS inspections with</li>" +
+//           //            "<li><b>{MLSVIO}</b> MLS violations</li></ul>" +
+//           //            "<ul><li><b>{FIREINSP}</b> FIRE inspections with</li>" +
+//           //            "<li><b>{FIREVIOL}</b> FIRE violations</li></ul>"
+//           // }
+//         });
+
+
+//         map.add(featureLayer2);
+
+
         var bar = new Charts.BarChart('chart1', {
          bar_width: 25,
            rounding: 10,
@@ -554,7 +575,12 @@
         });
 
         //view.ui.add(legend, "bottom-right");
+        var layerList = new LayerList({
+          view: view
+        });
 
+        // Add widget to the top right corner of the view
+        view.ui.add(layerList, "bottom-left");
 
         view.on("click", function(evt) {
           // data storage
